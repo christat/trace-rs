@@ -1,0 +1,11 @@
+[[package]]
+name = "rusty-cage"
+version = "0.1.0"
+dependencies = [
+ "rusty-math 0.1.0",
+]
+
+[[package]]
+name = "rusty-math"
+version = "0.1.0"
+

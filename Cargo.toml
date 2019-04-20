@@ -1,0 +1,8 @@
+[package]
+name = "rusty-cage"
+version = "0.1.0"
+authors = ["Chris Statkiewicz <christopherstat@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+rusty-math = { path = "rusty-math", version = "0.1.0" }

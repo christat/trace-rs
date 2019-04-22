@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Mul, MulAssign, Neg, Sub};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Tuple([f32; 4]);
@@ -160,6 +160,15 @@ impl Mul<Tuple> for f32 {
   }
 }
 
+impl MulAssign<f32> for Tuple {
+  fn mul_assign(&mut self, rhs: f32) {
+    self.0[0] *= rhs;
+    self.0[1] *= rhs;
+    self.0[2] *= rhs;
+    self.0[3] *= rhs;
+  }
+}
+
 impl Div<f32> for Tuple {
   type Output = Self;
 
@@ -245,6 +254,13 @@ mod tests {
     let a = Tuple::new(1.0, -2.0, 3.0, -4.0);
     assert_eq!(Tuple::new(3.5, -7.0, 10.5, -14.0), 3.5 * a);
     assert_eq!(Tuple::new(0.5, -1.0, 1.5, -2.0), 0.5 * a);
+  }
+
+  #[test]
+  fn implements_mulassign_f32() {
+    let mut a = Tuple::new(1.0, -2.0, 3.0, -4.0);
+    a *= 3.5;
+    assert_eq!(Tuple::new(3.5, -7.0, 10.5, -14.0), a);
   }
 
   #[test]

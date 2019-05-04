@@ -7,7 +7,7 @@ mod color;
 use cannon::{Projectile, Environment};
 use canvas::Canvas;
 use color::Color;
-use rm::Tuple;
+use rm::Tuple4;
 
 fn main() {
     let canvas_width = 900;
@@ -15,14 +15,14 @@ fn main() {
     let mut canvas = Canvas::new(canvas_width, canvas_height);
     let projectile_color = Color::new(1.0, 1.0, 1.0);
 
-    let position = Tuple::point(0.0, 1.0, 0.0);
-    let mut velocity = Tuple::vector(1.0, 1.8, 0.0);
+    let position = Tuple4::point(0.0, 1.0, 0.0);
+    let mut velocity = Tuple4::vector(1.0, 1.8, 0.0);
     velocity.normalize();
     velocity *= 11.25;
     let mut p = Projectile { position: position, velocity: velocity };
 
-    let gravity = Tuple::vector(0.0, -0.1, 0.0);
-    let wind = Tuple::vector(-0.01, 0.0, 0.0);
+    let gravity = Tuple4::vector(0.0, -0.1, 0.0);
+    let wind = Tuple4::vector(-0.01, 0.0, 0.0);
     let e = Environment { gravity: gravity, wind: wind };
 
     let mut steps = 0;

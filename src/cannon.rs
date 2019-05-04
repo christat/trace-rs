@@ -1,13 +1,13 @@
 extern crate rusty_math as rm;
 
 pub struct Projectile {
-  pub position: rm::Tuple,
-  pub velocity: rm::Tuple
+  pub position: rm::Tuple4,
+  pub velocity: rm::Tuple4
 }
 
 pub struct Environment {
-  pub gravity: rm::Tuple,
-  pub wind: rm::Tuple
+  pub gravity: rm::Tuple4,
+  pub wind: rm::Tuple4
 }
 
 pub fn tick(env: &Environment, proj: Projectile) -> Projectile {

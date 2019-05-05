@@ -25,6 +25,83 @@ impl Matrix4 {
     )
   }
 
+  pub fn translation(x: f32, y: f32, z: f32) -> Self {
+    Self::new(
+      Tuple4::new(1.0, 0.0, 0.0, 0.0),
+      Tuple4::new(0.0, 1.0, 0.0, 0.0),
+      Tuple4::new(0.0, 0.0, 1.0, 0.0),
+      Tuple4::new(x, y, z, 1.0)
+    )
+  }
+
+  pub fn scaling(x: f32, y: f32, z: f32) -> Self {
+    Self::new(
+      Tuple4::new(x, 0.0, 0.0, 0.0),
+      Tuple4::new(0.0, y, 0.0, 0.0),
+      Tuple4::new(0.0, 0.0, z, 0.0),
+      Tuple4::new(0.0, 0.0, 0.0, 1.0)
+    )
+  }
+
+  pub fn rotation_x(r: f32) -> Self {
+    Self::new(
+      Tuple4::new(1.0, 0.0, 0.0, 0.0),
+      Tuple4::new(0.0, r.cos(), r.sin(), 0.0),
+      Tuple4::new(0.0, -r.sin(), r.cos(), 0.0),
+      Tuple4::new(0.0, 0.0, 0.0, 1.0)
+    )
+  }
+
+  pub fn rotation_y(r: f32) -> Self {
+    Self::new(
+      Tuple4::new(r.cos(), 0.0, -r.sin(), 0.0),
+      Tuple4::new(0.0, 1.0, 0.0, 0.0),
+      Tuple4::new(r.sin(), 0.0, r.cos(), 0.0),
+      Tuple4::new(0.0, 0.0, 0.0, 1.0)
+    )
+  }
+
+  pub fn rotation_z(r: f32) -> Self {
+    Self::new(
+      Tuple4::new(r.cos(), r.sin(), 0.0, 0.0),
+      Tuple4::new(-r.sin(), r.cos(), 0.0, 0.0),
+      Tuple4::new(0.0, 0.0, 1.0, 0.0),
+      Tuple4::new(0.0, 0.0, 0.0, 1.0)
+    )
+  }
+
+  pub fn shearing(x_y: f32, x_z: f32, y_x: f32, y_z: f32, z_x: f32, z_y: f32) -> Self {
+    Self::new(
+      Tuple4::new(1.0, y_x, z_x, 0.0),
+      Tuple4::new(x_y, 1.0, z_y, 0.0),
+      Tuple4::new(x_z, y_z, 1.0, 0.0),
+      Tuple4::new(0.0, 0.0, 0.0, 1.0)
+    )
+  }
+
+  pub fn translate(self, x: f32, y: f32, z: f32) -> Self {
+    Self::translation(x, y, z) * self
+  }
+
+  pub fn scale(self, x: f32, y: f32, z: f32) -> Self {
+    Self::scaling(x, y, z) * self
+  }
+
+  pub fn rotate_x(self, r: f32) -> Self {
+    Self::rotation_x(r) * self
+  }
+  pub fn rotate_y(self, r: f32) -> Self {
+    Self::rotation_y(r) * self
+  }
+  
+  pub fn rotate_z(self, r: f32) -> Self {
+    Self::rotation_z(r) * self
+  }
+
+  pub fn shear(self, x_y: f32, x_z: f32, y_x: f32, y_z: f32, z_x: f32, z_y: f32) -> Self {
+    Self::shearing(x_y, x_z, y_x, y_z, z_x, z_y) * self
+  }
+
   pub fn r0(&self) -> Tuple4 {
     Tuple4::new(self.c0.x(), self.c1.x(), self.c2.x(), self.c3.x())
   }
@@ -187,6 +264,7 @@ mod tests {
   use super::{Matrix3, Matrix4, SubmatrixIndexError, Tuple4};
   use crate::Tuple3;
   use crate::test_utils::cmp_f32;
+  use std::f32::consts::PI;
   
   fn cmp_tuple4(a: Tuple4, b: Tuple4) -> bool {
     cmp_f32(a.x(), b.x()) &&
@@ -441,5 +519,97 @@ mod tests {
     );
     let mat_c = mat_a * mat_b;
     assert!(cmp_matrix4(mat_a, mat_c * mat_b.inverse().unwrap()));
+  }
+
+  #[test]
+  fn implements_translation() {
+    let transform = Matrix4::translation(5.0, -3.0, 2.0);
+    let point = Tuple4::point(-3.0, 4.0, 5.0);
+    assert_eq!(Tuple4::point(2.0, 1.0, 7.0), transform * point);
+
+    let transform_inverse = transform.inverse().unwrap();
+    assert_eq!(Tuple4::point(-8.0, 7.0, 3.0), transform_inverse * point);
+
+    let vector = Tuple4::vector(-3.0, 4.0, 5.0);
+    assert_eq!(vector, transform * vector);
+  }
+
+  #[test]
+  fn implements_scaling() {
+    let transform = Matrix4::scaling(2.0, 3.0, 4.0);
+    let point = Tuple4::point(-4.0, 6.0, 8.0);
+    assert_eq!(Tuple4::point(-8.0, 18.0, 32.0), transform * point);
+
+    let vector = Tuple4::vector(-4.0, 6.0, 8.0);
+    assert_eq!(Tuple4::vector(-8.0, 18.0, 32.0), transform * vector);
+
+    let transform_inverse = transform.inverse().unwrap();
+    assert_eq!(Tuple4::vector(-2.0, 2.0, 2.0), transform_inverse * vector);
+  }
+
+  #[test]
+  fn scaling_as_reflection() {
+    let transform = Matrix4::scaling(-1.0, 1.0, 1.0);
+    let point = Tuple4::point(2.0, 3.0, 4.0);
+    assert_eq!(Tuple4::point(-2.0, 3.0, 4.0), transform * point);
+  }
+
+  #[test]
+  fn implements_rotation_x() {
+    let point = Tuple4::point(0.0, 1.0, 0.0);
+    let half_quarter = Matrix4::rotation_x(PI / 4.0);
+    let full_quarter = Matrix4::rotation_x(PI / 2.0);
+    assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0), half_quarter * point));
+    assert!(cmp_tuple4(Tuple4::point(0.0, 0.0, 1.0), full_quarter * point));
+
+    let inverse_half_quarter = half_quarter.inverse().unwrap();
+    assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, -f32::sqrt(2.0)/2.0), inverse_half_quarter * point));
+  }
+
+  #[test]
+  fn implements_rotation_y() {
+    let point = Tuple4::point(0.0, 0.0, 1.0);
+    let half_quarter = Matrix4::rotation_y(PI / 4.0);
+    let full_quarter = Matrix4::rotation_y(PI / 2.0);
+    assert!(cmp_tuple4(Tuple4::point(f32::sqrt(2.0)/2.0, 0.0, f32::sqrt(2.0)/2.0), half_quarter * point));
+    assert!(cmp_tuple4(Tuple4::point(1.0, 0.0, 0.0), full_quarter * point));
+  }
+
+  #[test]
+  fn implements_rotation_z() {
+    let point = Tuple4::point(0.0, 1.0, 0.0);
+    let half_quarter = Matrix4::rotation_z(PI / 4.0);
+    let full_quarter = Matrix4::rotation_z(PI / 2.0);
+    assert!(cmp_tuple4(Tuple4::point(-f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0, 0.0), half_quarter * point));
+    assert!(cmp_tuple4(Tuple4::point(-1.0, 0.0, 0.0), full_quarter * point));
+  }
+
+  #[test]
+  fn implemenst_shearing() {
+    let transform_xy = Matrix4::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    let point = Tuple4::point(2.0, 3.0, 4.0);
+    assert!(cmp_tuple4(Tuple4::point(5.0, 3.0, 4.0), transform_xy * point));
+
+    let transform_xz = Matrix4::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+    assert!(cmp_tuple4(Tuple4::point(6.0, 3.0, 4.0), transform_xz * point));
+
+    let transform_yx = Matrix4::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+    assert!(cmp_tuple4(Tuple4::point(2.0, 5.0, 4.0), transform_yx * point));
+
+    let transform_yz = Matrix4::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+    assert!(cmp_tuple4(Tuple4::point(2.0, 7.0, 4.0), transform_yz * point));
+
+    let transform_zx = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 6.0), transform_zx * point));
+
+    let transform_zy = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 7.0), transform_zy * point));
+  }
+
+  #[test]
+  fn implements_chained_transforms() {
+    let transform = Matrix4::rotation_x(PI/2.0).scale(5.0, 5.0, 5.0).translate(10.0, 5.0, 7.0);
+    let point = Tuple4::point(1.0, 0.0, 1.0);
+    assert!(cmp_tuple4(Tuple4::point(15.0, 0.0, 7.0), transform * point));
   }
 }

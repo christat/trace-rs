@@ -1,40 +1,29 @@
 extern crate rusty_math as rm;
 
-mod cannon;
 mod canvas;
 mod color;
 
-use cannon::{Projectile, Environment};
 use canvas::Canvas;
 use color::Color;
-use rm::Tuple4;
+use rm::{Matrix4, Tuple4};
 
 fn main() {
-    let canvas_width = 900;
-    let canvas_height = 550;
+    let canvas_width = 150;
+    let canvas_height = 100;
     let mut canvas = Canvas::new(canvas_width, canvas_height);
-    let projectile_color = Color::new(1.0, 1.0, 1.0);
+    let white = Color::new(1.0, 1.0, 1.0);
 
-    let position = Tuple4::point(0.0, 1.0, 0.0);
-    let mut velocity = Tuple4::vector(1.0, 1.8, 0.0);
-    velocity.normalize();
-    velocity *= 11.25;
-    let mut p = Projectile { position: position, velocity: velocity };
+    let center_x = 0.5 * canvas_width as f32;
+    let center_y = 0.5 * canvas_height as f32;
+    let radius = 2.0/5.0 * usize::min(canvas_width, canvas_height) as f32;
+    let clock_center = Tuple4::point(0.0, 0.0, 0.0);
 
-    let gravity = Tuple4::vector(0.0, -0.1, 0.0);
-    let wind = Tuple4::vector(-0.01, 0.0, 0.0);
-    let e = Environment { gravity: gravity, wind: wind };
-
-    let mut steps = 0;
-    println!("Step | Position (x, y):");
-    while p.position.y() > 0.0 {
-        let canvas_x = f32::min(canvas_width as f32, f32::max(0.0, p.position.x())).round() as usize;
-        let canvas_y = f32::min(canvas_height as f32, f32::max(0.0, canvas_height as f32 - p.position.y())).round() as usize;
-        canvas.write(canvas_x, canvas_y, &projectile_color);
-        println!("{:^4} | ({}, {})", steps, p.position.x(), p.position.y());
-        p = cannon::tick(&e, p);
-        steps += 1;
+    for i in 0..12 {
+        let transform = Matrix4::translation(0.0, radius, 0.0)
+            .rotate_z(i as f32 * std::f32::consts::PI/6.0)
+            .translate(center_x, center_y, 0.0);
+        let p = transform * clock_center;
+        canvas.write(p.x() as usize, p.y() as usize, &white);
     }
-    println!("\nProjectile took {} steps to hit the ground.", steps);
-    canvas.export_ppm(&String::from("canvas.ppm"));
+    canvas.export_ppm(&String::from("clock.ppm"));
 }

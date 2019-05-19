@@ -1,5 +1,5 @@
 use std::fs;
-use super::color::{Color};
+use crate::color::Color;
 
 #[derive(Debug, PartialEq)]
 pub struct Canvas {

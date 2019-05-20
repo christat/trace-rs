@@ -1,12 +1,14 @@
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 
+pub const BLACK: Color = Color([0.0, 0.0, 0.0]);
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Color([f32; 3]);
 
 impl Color {
-  pub fn new(x: f32, y: f32, z: f32) -> Self {
-    Self([x, y, z])
+  pub fn new(r: f32, g: f32, b: f32) -> Self {
+    Self([r, g, b])
   }
 
   pub fn r(&self) -> f32 {

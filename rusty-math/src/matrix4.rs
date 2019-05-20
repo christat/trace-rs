@@ -263,22 +263,8 @@ impl Mul<f32> for Matrix4 {
 mod tests {
   use super::{Matrix3, Matrix4, SubmatrixIndexError, Tuple4};
   use crate::Tuple3;
-  use crate::test_utils::cmp_f32;
+  use crate::test_utils::{cmp_matrix4, cmp_tuple4};
   use std::f32::consts::PI;
-  
-  fn cmp_tuple4(a: Tuple4, b: Tuple4) -> bool {
-    cmp_f32(a.x(), b.x()) &&
-    cmp_f32(a.y(), b.y()) &&
-    cmp_f32(a.z(), b.z()) && 
-    cmp_f32(a.w(), b.w())
-  }
-
-  fn cmp_matrix4(a: Matrix4, b: Matrix4) -> bool {
-    cmp_tuple4(a.c0, b.c0) &&
-    cmp_tuple4(a.c1, b.c1) &&
-    cmp_tuple4(a.c2, b.c2) &&
-    cmp_tuple4(a.c3, b.c3)
-  }
 
   #[test]
   fn implements_constructor() {

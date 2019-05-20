@@ -35,6 +35,10 @@ impl Tuple4 {
     self.0[3]
   }
 
+  pub fn set_w(&mut self, w: f32) {
+    self.0[3] = w;
+  }
+
   pub fn xyz(&self) -> Tuple3 {
     Tuple3::new(self.x(), self.y(), self.z())
   }
@@ -104,6 +108,10 @@ impl Tuple4 {
         ])
       )
     }
+  }
+
+  pub fn reflect(vector: Self, normal: Self) -> Self {
+    vector - normal * 2.0 * Self::dot(vector, normal)
   }
 }
 
@@ -214,7 +222,7 @@ impl DivAssign<f32> for Tuple4 {
 #[cfg(test)]
 mod tests {
   use super::{PointCrossProductError, Tuple3, Tuple4};
-  use crate::test_utils::{cmp_f32};
+  use crate::test_utils::{cmp_f32, cmp_tuple4};
 
   #[test]
   fn implements_constructors() {
@@ -232,12 +240,15 @@ mod tests {
       assert_eq!(0.0, vector.w());
       assert_eq!(true, vector.is_vector());
 
-      let point = Tuple4::point(4.3, -4.2, 3.1);
+      let mut point = Tuple4::point(4.3, -4.2, 3.1);
       assert_eq!(4.3, point.x());
       assert_eq!(-4.2, point.y());
       assert_eq!(3.1, point.z());
       assert_eq!(1.0, point.w());
       assert_eq!(false, point.is_vector());
+
+      point.set_w(0.0);
+      assert_eq!(true, point.is_vector());
   }
 
   #[test]
@@ -389,5 +400,17 @@ mod tests {
     assert_eq!(Err(PointCrossProductError), Tuple4::cross(a, c));
     assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, a));
     assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, c));
+  }
+
+  #[test]
+  fn implements_reflect() {
+    let v = Tuple4::vector(1.0, -1.0, 0.0);
+    let n = Tuple4::vector(0.0, 1.0, 0.0);
+    assert_eq!(Tuple4::vector(1.0, 1.0, 0.0), Tuple4::reflect(v, n));
+
+    let coord = f32::sqrt(2.0) / 2.0;
+    let v = Tuple4::vector(0.0, -1.0, 0.0);
+    let n = Tuple4::vector(coord, coord, 0.0);
+    assert!(cmp_tuple4(Tuple4::vector(1.0, 0.0, 0.0), Tuple4::reflect(v, n)));
   }
 }

@@ -2,6 +2,7 @@ extern crate rusty_math as rm;
 
 use rm::{Matrix4, Tuple4};
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Ray {
   pub origin: Tuple4,
   pub direction: Tuple4

@@ -1,6 +1,7 @@
 extern crate rusty_math as rm;
 
 use crate::intersection::{Intersect, IntersectionRecord};
+use crate::material::{Material};
 use crate::ray::Ray;
 use rm::{Matrix4, Tuple4};
 
@@ -9,14 +10,16 @@ pub struct Sphere {
   origin: Tuple4,
   radius: f32,
   transform: Option<Matrix4>,
+  material: Option<Material>
 }
 
 impl Sphere {
-  pub fn new(origin: Tuple4, radius: f32) -> Self {
+  pub fn new(origin: Tuple4, radius: f32, material: Material) -> Self {
     Self {
       origin: origin,
       radius: radius,
       transform: None,
+      material: Some(material)
     }
   }
 
@@ -24,21 +27,48 @@ impl Sphere {
     Self {
       origin: Tuple4::point(0.0, 0.0, 0.0),
       radius: 1.0,
-      transform: None
+      transform: None,
+      material: None
     }
   }
 
   pub fn set_transform(&mut self, t: Matrix4) {
     self.transform = Some(t);
   }
+
+  pub fn set_material(&mut self, mat: Material) {
+    self.material = Some(mat);
+  }
+
+  pub fn normal_at(&self, p: Tuple4) -> Tuple4 {
+    let mut inv_transform = self.get_transform().inverse().unwrap();
+    let obj_n = inv_transform * p - self.origin;
+
+    inv_transform.transpose();
+    let mut world_n = inv_transform * obj_n;
+    world_n.set_w(0.0);
+    world_n.normalize();
+    world_n
+  }
+
+  pub fn get_transform(&self) -> Matrix4 {
+    match self.transform {
+      Some(t) => t,
+      None => Matrix4::identity(),
+    }
+  }
+
+  pub fn get_material(&self) -> Material {
+    match self.material {
+      Some(m) => m,
+      None => Material::default()
+    }
+  }
 }
 
 impl Intersect for Sphere {
   fn intersects(&self, r: Ray) -> Option<Vec<IntersectionRecord<Self>>> {
-    let transform = match self.transform {
-      Some(t) => t,
-      None => Matrix4::identity(),
-    };
+    let transform = self.get_transform();
     let inv_transform = match transform.inverse() {
       Ok(inv) => inv,
       Err(_) => return None,
@@ -68,32 +98,46 @@ impl Intersect for Sphere {
 
 #[cfg(test)]
 mod tests {
-  use super::{Matrix4, Sphere, Tuple4};
+  use super::{Material, Matrix4, Sphere, Tuple4};
+  use crate::color::Color;
   use crate::intersection::{hit, Intersect, IntersectionRecord};
   use crate::ray::Ray;
+  use std::f32::consts::{PI};
+  extern crate rusty_math;
+  use rusty_math::test_utils;
 
   #[test]
   fn implements_constructor() {
     let o = Tuple4::point(0.0, 0.0, 0.0);
     let r = 2.5;
+    let mat = Material::default();
     assert_eq!(
       Sphere {
         origin: o,
         radius: r,
-        transform: None
+        transform: None,
+        material: Some(mat)
       },
-      Sphere::new(o, r)
+      Sphere::new(o, r, mat)
     );
   }
 
   #[test]
   fn implements_set_transform() {
-    let mut s = Sphere::new(Tuple4::point(1.0, 2.0, 3.0), 4.0);
+    let mut s = Sphere::new(Tuple4::point(1.0, 2.0, 3.0), 4.0, Material::default());
     assert_eq!(None, s.transform);
 
     let t = Matrix4::translation(2.0, 3.0, 4.0);
     s.set_transform(t);
     assert_eq!(t, s.transform.unwrap());
+  }
+
+  #[test]
+  fn implements_set_material() {
+    let mut s = Sphere::unit();
+    let mat = Material::new(Color::new(0.0, 1.0, 2.0), 3.0, 4.0, 5.0, 6.0);
+    s.set_material(mat);
+    assert_eq!(mat, s.material.unwrap());
   }
 
   #[test]
@@ -176,5 +220,34 @@ mod tests {
     let i3 = IntersectionRecord { t: -3.0, o: &s };
     let i4 = IntersectionRecord { t: 2.0, o: &s };
     assert_eq!(&i4, hit(&vec![i1, i2, i3, i4]).unwrap());
+  }
+
+  #[test]
+  fn implements_normal_at() {
+    let s = Sphere::unit();
+    let n = s.normal_at(Tuple4::point(1.0, 0.0, 0.0));
+    assert_eq!(Tuple4::vector(1.0, 0.0, 0.0), n);
+
+    let n = s.normal_at(Tuple4::point(0.0, 1.0, 0.0));
+    assert_eq!(Tuple4::vector(0.0, 1.0, 0.0), n);
+
+    let n = s.normal_at(Tuple4::point(0.0, 0.0, 1.0));
+    assert_eq!(Tuple4::vector(0.0, 0.0, 1.0), n);
+
+    let coord = f32::sqrt(3.0) / 3.0;
+    let n = s.normal_at(Tuple4::point(coord, coord, coord));
+    assert!(test_utils::cmp_tuple4(Tuple4::vector(coord, coord, coord), n));
+    assert!(test_utils::cmp_tuple4(n.normalized(), n));
+  }
+
+  #[test]
+  fn test_normal_at_with_transforms() {
+    let mut s = Sphere::unit();
+    s.set_transform(Matrix4::translation(0.0, 1.0, 0.0));
+    assert!(test_utils::cmp_tuple4(Tuple4::vector(0.0, 0.70711, -0.70711), s.normal_at(Tuple4::point(0.0, 1.70711, -0.70711))));
+
+    s.set_transform(Matrix4::scaling(1.0, 0.5, 1.0) * Matrix4::rotation_z(PI / 5.0));
+    let coord = f32::sqrt(2.0) / 2.0;
+    assert!(test_utils::cmp_tuple4(Tuple4::vector(0.0, 0.97014, -0.24254), s.normal_at(Tuple4::point(0.0, coord, coord))));
   }
 }

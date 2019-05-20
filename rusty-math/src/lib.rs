@@ -5,7 +5,7 @@ mod matrix4;
 mod tuple2;
 mod tuple3;
 mod tuple4;
-mod test_utils;
+pub mod test_utils;
 
 pub use errors::*;
 pub use matrix2::Matrix2;

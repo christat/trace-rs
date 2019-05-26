@@ -221,196 +221,204 @@ impl DivAssign<f32> for Tuple4 {
 
 #[cfg(test)]
 mod tests {
-  use super::{PointCrossProductError, Tuple3, Tuple4};
-  use crate::test_utils::{cmp_f32, cmp_tuple4};
+  mod methods {
+    use super::super::{PointCrossProductError, Tuple3, Tuple4};
+    use crate::test_utils::{cmp_f32, cmp_tuple4};
 
-  #[test]
-  fn implements_constructors() {
-    assert_eq!(Tuple4([4.3, -4.2, 3.1, 5.0]), Tuple4::new(4.3, -4.2, 3.1, 5.0));
-    assert_eq!(Tuple4([4.3, -4.2, 3.1, 1.0]), Tuple4::point(4.3, -4.2, 3.1));
-    assert_eq!(Tuple4([4.3, -4.2, 3.1, 0.0]), Tuple4::vector(4.3, -4.2, 3.1));
-  }
+    #[test]
+    fn constructors() {
+      assert_eq!(Tuple4([4.3, -4.2, 3.1, 5.0]), Tuple4::new(4.3, -4.2, 3.1, 5.0));
+      assert_eq!(Tuple4([4.3, -4.2, 3.1, 1.0]), Tuple4::point(4.3, -4.2, 3.1));
+      assert_eq!(Tuple4([4.3, -4.2, 3.1, 0.0]), Tuple4::vector(4.3, -4.2, 3.1));
+    }
 
-  #[test]
-  fn implements_accessors() {
+    #[test]
+    fn accessors() {
+        let vector = Tuple4::vector(4.3, -4.2, 3.1);
+        assert_eq!(4.3, vector.x());
+        assert_eq!(-4.2, vector.y());
+        assert_eq!(3.1, vector.z());
+        assert_eq!(0.0, vector.w());
+        assert_eq!(true, vector.is_vector());
+
+        let mut point = Tuple4::point(4.3, -4.2, 3.1);
+        assert_eq!(4.3, point.x());
+        assert_eq!(-4.2, point.y());
+        assert_eq!(3.1, point.z());
+        assert_eq!(1.0, point.w());
+        assert_eq!(false, point.is_vector());
+
+        point.set_w(0.0);
+        assert_eq!(true, point.is_vector());
+    }
+
+    #[test]
+    fn swizzling() {
       let vector = Tuple4::vector(4.3, -4.2, 3.1);
-      assert_eq!(4.3, vector.x());
-      assert_eq!(-4.2, vector.y());
-      assert_eq!(3.1, vector.z());
-      assert_eq!(0.0, vector.w());
-      assert_eq!(true, vector.is_vector());
+      assert_eq!(Tuple3::new(4.3, -4.2, 3.1), vector.xyz());
+      assert_eq!(Tuple3::new(4.3, -4.2, 0.0), vector.xyw());
+      assert_eq!(Tuple3::new(4.3, 3.1, 0.0), vector.xzw());
+      assert_eq!(Tuple3::new(-4.2, 3.1, 0.0), vector.yzw());
+    }
 
-      let mut point = Tuple4::point(4.3, -4.2, 3.1);
-      assert_eq!(4.3, point.x());
-      assert_eq!(-4.2, point.y());
-      assert_eq!(3.1, point.z());
-      assert_eq!(1.0, point.w());
-      assert_eq!(false, point.is_vector());
+    
 
-      point.set_w(0.0);
-      assert_eq!(true, point.is_vector());
+    #[test]
+    fn length_squared() {
+      let vx = Tuple4::vector(1.0, 0.0, 0.0);
+      assert_eq!(1.0, vx.length_squared());
+
+      let vy = Tuple4::vector(0.0, 1.0, 0.0);
+      assert_eq!(1.0, vy.length_squared());
+
+      let vz = Tuple4::vector(0.0, 0.0, 1.0);
+      assert_eq!(1.0, vz.length_squared());
+
+      let v0 = Tuple4::vector(1.0, 2.0, 3.0);
+      assert_eq!(14.0, v0.length_squared());
+
+      let v1 = Tuple4::vector(-1.0, -2.0, -3.0);
+      assert_eq!(14.0, v1.length_squared());
+    }
+
+    #[test]
+    fn length() {
+      let vx = Tuple4::vector(1.0, 0.0, 0.0);
+      assert_eq!(1.0, vx.length());
+
+      let vy = Tuple4::vector(0.0, 1.0, 0.0);
+      assert_eq!(1.0, vy.length());
+
+      let vz = Tuple4::vector(0.0, 0.0, 1.0);
+      assert_eq!(1.0, vz.length());
+
+      let v0 = Tuple4::vector(1.0, 2.0, 3.0);
+      assert_eq!(f32::sqrt(14.0), v0.length());
+
+      let v1 = Tuple4::vector(-1.0, -2.0, -3.0);
+      assert_eq!(f32::sqrt(14.0), v1.length());
+    }
+
+    #[test]
+    fn normalize() {
+      let mut v0 = Tuple4::vector(4.0, 0.0, 0.0);
+      v0.normalize();
+      assert_eq!(Tuple4::vector(1.0, 0.0, 0.0), v0);
+
+      let mut v1 = Tuple4::vector(1.0, 2.0, 3.0);
+      v1.normalize();
+      let sqrt14 = f32::sqrt(14.0);
+      assert_eq!(Tuple4::vector(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
+
+    #[test]
+    fn normalized() {
+      let v0 = Tuple4::vector(4.0, 0.0, 0.0).normalized();
+      assert_eq!(Tuple4::vector(1.0, 0.0, 0.0), v0);
+
+      let v1 = Tuple4::vector(1.0, 2.0, 3.0).normalized();
+      let sqrt14 = f32::sqrt(14.0);
+      assert_eq!(Tuple4::vector(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
+
+    #[test]
+    fn dot() {
+      let a = Tuple4::vector(1.0, 2.0, 3.0);
+      let b = Tuple4::vector(2.0, 3.0, 4.0);
+      assert_eq!(20.0, Tuple4::dot(a, b));
+    }
+
+    #[test]
+    fn cross() {
+      let a = Tuple4::vector(1.0, 2.0, 3.0);
+      let b = Tuple4::vector(2.0, 3.0, 4.0);
+      assert_eq!(Ok(Tuple4::vector(-1.0, 2.0, -1.0)), Tuple4::cross(a, b));
+      assert_eq!(Ok(Tuple4::vector(1.0, -2.0, 1.0)), Tuple4::cross(b, a));
+
+      let c = Tuple4::point(2.0, 3.0, 4.0);
+      assert_eq!(Err(PointCrossProductError), Tuple4::cross(a, c));
+      assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, a));
+      assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, c));
+    }
+
+    #[test]
+    fn reflect() {
+      let v = Tuple4::vector(1.0, -1.0, 0.0);
+      let n = Tuple4::vector(0.0, 1.0, 0.0);
+      assert_eq!(Tuple4::vector(1.0, 1.0, 0.0), Tuple4::reflect(v, n));
+
+      let coord = f32::sqrt(2.0) / 2.0;
+      let v = Tuple4::vector(0.0, -1.0, 0.0);
+      let n = Tuple4::vector(coord, coord, 0.0);
+      assert!(cmp_tuple4(Tuple4::vector(1.0, 0.0, 0.0), Tuple4::reflect(v, n)));
+    }
   }
 
-  #[test]
-  fn implements_swizzled_sub() {
-    let vector = Tuple4::vector(4.3, -4.2, 3.1);
-    assert_eq!(Tuple3::new(4.3, -4.2, 3.1), vector.xyz());
-    assert_eq!(Tuple3::new(4.3, -4.2, 0.0), vector.xyw());
-    assert_eq!(Tuple3::new(4.3, 3.1, 0.0), vector.xzw());
-    assert_eq!(Tuple3::new(-4.2, 3.1, 0.0), vector.yzw());
-  }
+  mod traits {
+    use crate::Tuple4;
 
-  #[test]
-  fn implements_add() {
-      let a1 = Tuple4::new(3.0, -2.0, 5.0, 1.0);
-      let a2 = Tuple4::new(-2.0, 3.0, 1.0, 0.0);
-      assert_eq!(Tuple4::new(1.0, 1.0, 6.0, 1.0), a1 + a2);
-  }
+    #[test]
+    fn add() {
+        let a1 = Tuple4::new(3.0, -2.0, 5.0, 1.0);
+        let a2 = Tuple4::new(-2.0, 3.0, 1.0, 0.0);
+        assert_eq!(Tuple4::new(1.0, 1.0, 6.0, 1.0), a1 + a2);
+    }
 
-  #[test]
-  fn implements_sub() {
-      let p1 = Tuple4::point(3.0, 2.0, 1.0);
-      let p2 = Tuple4::point(5.0, 6.0, 7.0);
-      assert_eq!(Tuple4::vector(-2.0, -4.0, -6.0), p1 - p2);
+    #[test]
+    fn sub() {
+        let p1 = Tuple4::point(3.0, 2.0, 1.0);
+        let p2 = Tuple4::point(5.0, 6.0, 7.0);
+        assert_eq!(Tuple4::vector(-2.0, -4.0, -6.0), p1 - p2);
 
-      let p = Tuple4::point(3.0, 2.0, 1.0);
-      let v = Tuple4::vector(5.0, 6.0, 7.0);
-      assert_eq!(Tuple4::point(-2.0, -4.0, -6.0), p - v);
+        let p = Tuple4::point(3.0, 2.0, 1.0);
+        let v = Tuple4::vector(5.0, 6.0, 7.0);
+        assert_eq!(Tuple4::point(-2.0, -4.0, -6.0), p - v);
 
-      let v1 = Tuple4::vector(3.0, 2.0, 1.0);
-      let v2 = Tuple4::vector(5.0, 6.0, 7.0);
-      assert_eq!(Tuple4::vector(-2.0, -4.0, -6.0), v1 - v2);
-  }
+        let v1 = Tuple4::vector(3.0, 2.0, 1.0);
+        let v2 = Tuple4::vector(5.0, 6.0, 7.0);
+        assert_eq!(Tuple4::vector(-2.0, -4.0, -6.0), v1 - v2);
+    }
 
-  #[test]
-  fn implements_neg() {
-    let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
-    assert_eq!(Tuple4::new(-1.0, 2.0, -3.0, 4.0), -a);
-  }
+    #[test]
+    fn neg() {
+      let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
+      assert_eq!(Tuple4::new(-1.0, 2.0, -3.0, 4.0), -a);
+    }
 
-  #[test]
-  fn implements_tuple_mul_f32() {
-    let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
-    assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), a * 3.5);
-    assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), a * 0.5);
-  }
+    #[test]
+    fn mul_f32() {
+      let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
+      assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), a * 3.5);
+      assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), a * 0.5);
+    }
 
-  #[test]
-  fn implements_f32_mul_tuple() {
-    let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
-    assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), 3.5 * a);
-    assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), 0.5 * a);
-  }
+    #[test]
+    fn f32_mul_tuple() {
+      let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
+      assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), 3.5 * a);
+      assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), 0.5 * a);
+    }
 
-  #[test]
-  fn implements_mulassign_f32() {
-    let mut a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
-    a *= 3.5;
-    assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), a);
-  }
+    #[test]
+    fn mulassign_f32() {
+      let mut a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
+      a *= 3.5;
+      assert_eq!(Tuple4::new(3.5, -7.0, 10.5, -14.0), a);
+    }
 
-  #[test]
-  fn implements_tuple_div_f32() {
-    let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
-    assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), a / 2.0);
-  }
+    #[test]
+    fn div_f32() {
+      let a = Tuple4::new(1.0, -2.0, 3.0, -4.0);
+      assert_eq!(Tuple4::new(0.5, -1.0, 1.5, -2.0), a / 2.0);
+    }
 
-  #[test]
-  fn implements_divassign_f32() {
-    let mut a = Tuple4::new(1.0, -2.0, 4.0, -8.0);
-    a /= 4.0;
-    assert_eq!(Tuple4::new(0.25, -0.5, 1.0, -2.0), a);
-  }
-
-  #[test]
-  fn implements_length_squared() {
-    let vx = Tuple4::vector(1.0, 0.0, 0.0);
-    assert_eq!(1.0, vx.length_squared());
-
-    let vy = Tuple4::vector(0.0, 1.0, 0.0);
-    assert_eq!(1.0, vy.length_squared());
-
-    let vz = Tuple4::vector(0.0, 0.0, 1.0);
-    assert_eq!(1.0, vz.length_squared());
-
-    let v0 = Tuple4::vector(1.0, 2.0, 3.0);
-    assert_eq!(14.0, v0.length_squared());
-
-    let v1 = Tuple4::vector(-1.0, -2.0, -3.0);
-    assert_eq!(14.0, v1.length_squared());
-  }
-
-  #[test]
-  fn implements_length() {
-    let vx = Tuple4::vector(1.0, 0.0, 0.0);
-    assert_eq!(1.0, vx.length());
-
-    let vy = Tuple4::vector(0.0, 1.0, 0.0);
-    assert_eq!(1.0, vy.length());
-
-    let vz = Tuple4::vector(0.0, 0.0, 1.0);
-    assert_eq!(1.0, vz.length());
-
-    let v0 = Tuple4::vector(1.0, 2.0, 3.0);
-    assert_eq!(f32::sqrt(14.0), v0.length());
-
-    let v1 = Tuple4::vector(-1.0, -2.0, -3.0);
-    assert_eq!(f32::sqrt(14.0), v1.length());
-  }
-
-  #[test]
-  fn implements_normalize() {
-    let mut v0 = Tuple4::vector(4.0, 0.0, 0.0);
-    v0.normalize();
-    assert_eq!(Tuple4::vector(1.0, 0.0, 0.0), v0);
-
-    let mut v1 = Tuple4::vector(1.0, 2.0, 3.0);
-    v1.normalize();
-    let sqrt14 = f32::sqrt(14.0);
-    assert_eq!(Tuple4::vector(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
-    assert!(cmp_f32(1.0, v1.length()));
-  }
-
-  #[test]
-  fn implements_normalized() {
-    let v0 = Tuple4::vector(4.0, 0.0, 0.0).normalized();
-    assert_eq!(Tuple4::vector(1.0, 0.0, 0.0), v0);
-
-    let v1 = Tuple4::vector(1.0, 2.0, 3.0).normalized();
-    let sqrt14 = f32::sqrt(14.0);
-    assert_eq!(Tuple4::vector(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
-    assert!(cmp_f32(1.0, v1.length()));
-  }
-
-  #[test]
-  fn implements_dot_product() {
-    let a = Tuple4::vector(1.0, 2.0, 3.0);
-    let b = Tuple4::vector(2.0, 3.0, 4.0);
-    assert_eq!(20.0, Tuple4::dot(a, b));
-  }
-
-  #[test]
-  fn implements_cross_product() {
-    let a = Tuple4::vector(1.0, 2.0, 3.0);
-    let b = Tuple4::vector(2.0, 3.0, 4.0);
-    assert_eq!(Ok(Tuple4::vector(-1.0, 2.0, -1.0)), Tuple4::cross(a, b));
-    assert_eq!(Ok(Tuple4::vector(1.0, -2.0, 1.0)), Tuple4::cross(b, a));
-
-    let c = Tuple4::point(2.0, 3.0, 4.0);
-    assert_eq!(Err(PointCrossProductError), Tuple4::cross(a, c));
-    assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, a));
-    assert_eq!(Err(PointCrossProductError), Tuple4::cross(c, c));
-  }
-
-  #[test]
-  fn implements_reflect() {
-    let v = Tuple4::vector(1.0, -1.0, 0.0);
-    let n = Tuple4::vector(0.0, 1.0, 0.0);
-    assert_eq!(Tuple4::vector(1.0, 1.0, 0.0), Tuple4::reflect(v, n));
-
-    let coord = f32::sqrt(2.0) / 2.0;
-    let v = Tuple4::vector(0.0, -1.0, 0.0);
-    let n = Tuple4::vector(coord, coord, 0.0);
-    assert!(cmp_tuple4(Tuple4::vector(1.0, 0.0, 0.0), Tuple4::reflect(v, n)));
+    #[test]
+    fn divassign_f32() {
+      let mut a = Tuple4::new(1.0, -2.0, 4.0, -8.0);
+      a /= 4.0;
+      assert_eq!(Tuple4::new(0.25, -0.5, 1.0, -2.0), a);
+    }
   }
 }

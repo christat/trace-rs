@@ -173,164 +173,170 @@ impl DivAssign<f32> for Tuple3 {
 
 #[cfg(test)]
 mod tests {
-  use super::{Tuple2, Tuple3};
-  use crate::test_utils::cmp_f32;
+  mod methods {
+    use super::super::{Tuple2, Tuple3};
+    use crate::test_utils::cmp_f32;
 
-  #[test]
-  fn implements_constructor() {
-    assert_eq!(Tuple3([4.3, -4.2, 3.1]), Tuple3::new(4.3, -4.2, 3.1));
-  }
+    #[test]
+    fn constructor() {
+      assert_eq!(Tuple3([4.3, -4.2, 3.1]), Tuple3::new(4.3, -4.2, 3.1));
+    }
 
-  #[test]
-  fn implements_accessors() {
+    #[test]
+    fn accessors() {
+        let a1 = Tuple3::new(4.3, -4.2, 3.1);
+        assert_eq!(4.3, a1.x());
+        assert_eq!(-4.2, a1.y());
+        assert_eq!(3.1, a1.z());
+    }
+
+    #[test]
+    fn swizzling() {
       let a1 = Tuple3::new(4.3, -4.2, 3.1);
-      assert_eq!(4.3, a1.x());
-      assert_eq!(-4.2, a1.y());
-      assert_eq!(3.1, a1.z());
+      assert_eq!(Tuple2::new(4.3, -4.2), a1.xy());
+      assert_eq!(Tuple2::new(4.3, 3.1), a1.xz());
+      assert_eq!(Tuple2::new(-4.2, 3.1), a1.yz());
+    }
+
+    #[test]
+    fn length_squared() {
+      let vx = Tuple3::new(1.0, 0.0, 0.0);
+      assert_eq!(1.0, vx.length_squared());
+
+      let vy = Tuple3::new(0.0, 1.0, 0.0);
+      assert_eq!(1.0, vy.length_squared());
+
+      let vz = Tuple3::new(0.0, 0.0, 1.0);
+      assert_eq!(1.0, vz.length_squared());
+
+      let v0 = Tuple3::new(1.0, 2.0, 3.0);
+      assert_eq!(14.0, v0.length_squared());
+
+      let v1 = Tuple3::new(-1.0, -2.0, -3.0);
+      assert_eq!(14.0, v1.length_squared());
+    }
+
+    #[test]
+    fn length() {
+      let vx = Tuple3::new(1.0, 0.0, 0.0);
+      assert_eq!(1.0, vx.length());
+
+      let vy = Tuple3::new(0.0, 1.0, 0.0);
+      assert_eq!(1.0, vy.length());
+
+      let vz = Tuple3::new(0.0, 0.0, 1.0);
+      assert_eq!(1.0, vz.length());
+
+      let v0 = Tuple3::new(1.0, 2.0, 3.0);
+      assert_eq!(f32::sqrt(14.0), v0.length());
+
+      let v1 = Tuple3::new(-1.0, -2.0, -3.0);
+      assert_eq!(f32::sqrt(14.0), v1.length());
+    }
+
+    #[test]
+    fn normalize() {
+      let mut v0 = Tuple3::new(4.0, 0.0, 0.0);
+      v0.normalize();
+      assert_eq!(Tuple3::new(1.0, 0.0, 0.0), v0);
+
+      let mut v1 = Tuple3::new(1.0, 2.0, 3.0);
+      v1.normalize();
+      let sqrt14 = f32::sqrt(14.0);
+      assert_eq!(Tuple3::new(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
+
+    #[test]
+    fn normalized() {
+      let v0 = Tuple3::new(4.0, 0.0, 0.0).normalized();
+      assert_eq!(Tuple3::new(1.0, 0.0, 0.0), v0);
+
+      let v1 = Tuple3::new(1.0, 2.0, 3.0).normalized();
+      let sqrt14 = f32::sqrt(14.0);
+      assert_eq!(Tuple3::new(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
+
+    #[test]
+    fn dot() {
+      let a = Tuple3::new(1.0, 2.0, 3.0);
+      let b = Tuple3::new(2.0, 3.0, 4.0);
+      assert_eq!(20.0, Tuple3::dot(a, b));
+    }
+
+    #[test]
+    fn cross() {
+      let a = Tuple3::new(1.0, 2.0, 3.0);
+      let b = Tuple3::new(2.0, 3.0, 4.0);
+      assert_eq!(Tuple3::new(-1.0, 2.0, -1.0), Tuple3::cross(a, b));
+      assert_eq!(Tuple3::new(1.0, -2.0, 1.0), Tuple3::cross(b, a));
+    }
   }
 
-  #[test]
-  fn implements_swizzled_sub() {
-    let a1 = Tuple3::new(4.3, -4.2, 3.1);
-    assert_eq!(Tuple2::new(4.3, -4.2), a1.xy());
-    assert_eq!(Tuple2::new(4.3, 3.1), a1.xz());
-    assert_eq!(Tuple2::new(-4.2, 3.1), a1.yz());
-  }
+  mod traits {
+    use super::super::Tuple3;
 
-  #[test]
-  fn implements_add() {
-      let a1 = Tuple3::new(3.0, -2.0, 5.0);
-      let a2 = Tuple3::new(-2.0, 3.0, 1.0);
-      assert_eq!(Tuple3::new(1.0, 1.0, 6.0), a1 + a2);
-  }
+    #[test]
+    fn add() {
+        let a1 = Tuple3::new(3.0, -2.0, 5.0);
+        let a2 = Tuple3::new(-2.0, 3.0, 1.0);
+        assert_eq!(Tuple3::new(1.0, 1.0, 6.0), a1 + a2);
+    }
 
-  #[test]
-  fn implements_sub() {
-      let p1 = Tuple3::new(3.0, 2.0, 1.0);
-      let p2 = Tuple3::new(5.0, 6.0, 7.0);
-      assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), p1 - p2);
+    #[test]
+    fn sub() {
+        let p1 = Tuple3::new(3.0, 2.0, 1.0);
+        let p2 = Tuple3::new(5.0, 6.0, 7.0);
+        assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), p1 - p2);
 
-      let p = Tuple3::new(3.0, 2.0, 1.0);
-      let v = Tuple3::new(5.0, 6.0, 7.0);
-      assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), p - v);
+        let p = Tuple3::new(3.0, 2.0, 1.0);
+        let v = Tuple3::new(5.0, 6.0, 7.0);
+        assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), p - v);
 
-      let v1 = Tuple3::new(3.0, 2.0, 1.0);
-      let v2 = Tuple3::new(5.0, 6.0, 7.0);
-      assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), v1 - v2);
-  }
+        let v1 = Tuple3::new(3.0, 2.0, 1.0);
+        let v2 = Tuple3::new(5.0, 6.0, 7.0);
+        assert_eq!(Tuple3::new(-2.0, -4.0, -6.0), v1 - v2);
+    }
 
-  #[test]
-  fn implements_neg() {
-    let a = Tuple3::new(1.0, -2.0, 3.0);
-    assert_eq!(Tuple3::new(-1.0, 2.0, -3.0), -a);
-  }
+    #[test]
+    fn neg() {
+      let a = Tuple3::new(1.0, -2.0, 3.0);
+      assert_eq!(Tuple3::new(-1.0, 2.0, -3.0), -a);
+    }
 
-  #[test]
-  fn implements_tuple_mul_f32() {
-    let a = Tuple3::new(1.0, -2.0, 3.0);
-    assert_eq!(Tuple3::new(3.5, -7.0, 10.5), a * 3.5);
-    assert_eq!(Tuple3::new(0.5, -1.0, 1.5), a * 0.5);
-  }
+    #[test]
+    fn mul_f32() {
+      let a = Tuple3::new(1.0, -2.0, 3.0);
+      assert_eq!(Tuple3::new(3.5, -7.0, 10.5), a * 3.5);
+      assert_eq!(Tuple3::new(0.5, -1.0, 1.5), a * 0.5);
+    }
 
-  #[test]
-  fn implements_f32_mul_tuple() {
-    let a = Tuple3::new(1.0, -2.0, 3.0);
-    assert_eq!(Tuple3::new(3.5, -7.0, 10.5), 3.5 * a);
-    assert_eq!(Tuple3::new(0.5, -1.0, 1.5), 0.5 * a);
-  }
+    #[test]
+    fn f32_mul_tuple() {
+      let a = Tuple3::new(1.0, -2.0, 3.0);
+      assert_eq!(Tuple3::new(3.5, -7.0, 10.5), 3.5 * a);
+      assert_eq!(Tuple3::new(0.5, -1.0, 1.5), 0.5 * a);
+    }
 
-  #[test]
-  fn implements_mulassign_f32() {
-    let mut a = Tuple3::new(1.0, -2.0, 3.0);
-    a *= 3.5;
-    assert_eq!(Tuple3::new(3.5, -7.0, 10.5), a);
-  }
+    #[test]
+    fn mulassign_f32() {
+      let mut a = Tuple3::new(1.0, -2.0, 3.0);
+      a *= 3.5;
+      assert_eq!(Tuple3::new(3.5, -7.0, 10.5), a);
+    }
 
-  #[test]
-  fn implements_tuple_div_f32() {
-    let a = Tuple3::new(1.0, -2.0, 3.0);
-    assert_eq!(Tuple3::new(0.5, -1.0, 1.5), a / 2.0);
-  }
+    #[test]
+    fn div_f32() {
+      let a = Tuple3::new(1.0, -2.0, 3.0);
+      assert_eq!(Tuple3::new(0.5, -1.0, 1.5), a / 2.0);
+    }
 
-   #[test]
-  fn implements_divassign_f32() {
-    let mut a = Tuple3::new(1.0, -2.0, 4.0);
-    a /= 4.0;
-    assert_eq!(Tuple3::new(0.25, -0.5, 1.0), a);
-  }
-
-  #[test]
-  fn implements_length_squared() {
-    let vx = Tuple3::new(1.0, 0.0, 0.0);
-    assert_eq!(1.0, vx.length_squared());
-
-    let vy = Tuple3::new(0.0, 1.0, 0.0);
-    assert_eq!(1.0, vy.length_squared());
-
-    let vz = Tuple3::new(0.0, 0.0, 1.0);
-    assert_eq!(1.0, vz.length_squared());
-
-    let v0 = Tuple3::new(1.0, 2.0, 3.0);
-    assert_eq!(14.0, v0.length_squared());
-
-    let v1 = Tuple3::new(-1.0, -2.0, -3.0);
-    assert_eq!(14.0, v1.length_squared());
-  }
-
-  #[test]
-  fn implements_length() {
-    let vx = Tuple3::new(1.0, 0.0, 0.0);
-    assert_eq!(1.0, vx.length());
-
-    let vy = Tuple3::new(0.0, 1.0, 0.0);
-    assert_eq!(1.0, vy.length());
-
-    let vz = Tuple3::new(0.0, 0.0, 1.0);
-    assert_eq!(1.0, vz.length());
-
-    let v0 = Tuple3::new(1.0, 2.0, 3.0);
-    assert_eq!(f32::sqrt(14.0), v0.length());
-
-    let v1 = Tuple3::new(-1.0, -2.0, -3.0);
-    assert_eq!(f32::sqrt(14.0), v1.length());
-  }
-
-  #[test]
-  fn implements_normalize() {
-    let mut v0 = Tuple3::new(4.0, 0.0, 0.0);
-    v0.normalize();
-    assert_eq!(Tuple3::new(1.0, 0.0, 0.0), v0);
-
-    let mut v1 = Tuple3::new(1.0, 2.0, 3.0);
-    v1.normalize();
-    let sqrt14 = f32::sqrt(14.0);
-    assert_eq!(Tuple3::new(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
-    assert!(cmp_f32(1.0, v1.length()));
-  }
-
-  #[test]
-  fn implements_normalized() {
-    let v0 = Tuple3::new(4.0, 0.0, 0.0).normalized();
-    assert_eq!(Tuple3::new(1.0, 0.0, 0.0), v0);
-
-    let v1 = Tuple3::new(1.0, 2.0, 3.0).normalized();
-    let sqrt14 = f32::sqrt(14.0);
-    assert_eq!(Tuple3::new(1.0 / sqrt14, 2.0 / sqrt14, 3.0 / sqrt14), v1);
-    assert!(cmp_f32(1.0, v1.length()));
-  }
-
-  #[test]
-  fn implements_dot_product() {
-    let a = Tuple3::new(1.0, 2.0, 3.0);
-    let b = Tuple3::new(2.0, 3.0, 4.0);
-    assert_eq!(20.0, Tuple3::dot(a, b));
-  }
-
-  #[test]
-  fn implements_cross_product() {
-    let a = Tuple3::new(1.0, 2.0, 3.0);
-    let b = Tuple3::new(2.0, 3.0, 4.0);
-    assert_eq!(Tuple3::new(-1.0, 2.0, -1.0), Tuple3::cross(a, b));
-    assert_eq!(Tuple3::new(1.0, -2.0, 1.0), Tuple3::cross(b, a));
+    #[test]
+    fn divassign_f32() {
+      let mut a = Tuple3::new(1.0, -2.0, 4.0);
+      a /= 4.0;
+      assert_eq!(Tuple3::new(0.25, -0.5, 1.0), a);
+    }
   }
 }

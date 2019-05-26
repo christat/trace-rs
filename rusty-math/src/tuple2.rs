@@ -135,134 +135,141 @@ impl DivAssign<f32> for Tuple2 {
 
 #[cfg(test)]
 mod tests {
-  use super::Tuple2;
-  use crate::test_utils::cmp_f32;
 
-  #[test]
-  fn implements_constructor() {
-    assert_eq!(Tuple2::new(4.3, -4.2), Tuple2([4.3, -4.2]));
-  }
+  mod methods {
+    use super::super::Tuple2;
+    use crate::test_utils::cmp_f32;
 
-  #[test]
-  fn implements_accessors() {
+    #[test]
+    fn constructor() {
+      assert_eq!(Tuple2::new(4.3, -4.2), Tuple2([4.3, -4.2]));
+    }
+
+    #[test]
+    fn accessors() {
       let a1 = Tuple2::new(4.3, -4.2);
       assert_eq!(4.3, a1.x());
       assert_eq!(-4.2, a1.y());
+    }
+
+    #[test]
+    fn length_squared() {
+      let vx = Tuple2::new(1.0, 0.0);
+      assert_eq!(1.0, vx.length_squared());
+
+      let vy = Tuple2::new(0.0, 1.0);
+      assert_eq!(1.0, vy.length_squared());
+
+      let v0 = Tuple2::new(1.0, 2.0);
+      assert_eq!(5.0, v0.length_squared());
+
+      let v1 = Tuple2::new(-1.0, -2.0);
+      assert_eq!(5.0, v1.length_squared());
+    }
+
+    #[test]
+    fn length() {
+      let vx = Tuple2::new(1.0, 0.0);
+      assert_eq!(1.0, vx.length());
+
+      let vy = Tuple2::new(0.0, 1.0);
+      assert_eq!(1.0, vy.length());
+
+      let v0 = Tuple2::new(1.0, 2.0);
+      assert_eq!(f32::sqrt(5.0), v0.length());
+
+      let v1 = Tuple2::new(-1.0, -2.0);
+      assert_eq!(f32::sqrt(5.0), v1.length());
+    }
+
+    #[test]
+    fn normalize() {
+      let mut v0 = Tuple2::new(4.0, 0.0);
+      v0.normalize();
+      assert_eq!(Tuple2::new(1.0, 0.0), v0);
+
+      let mut v1 = Tuple2::new(1.0, 2.0);
+      v1.normalize();
+      let sqrt5 = f32::sqrt(5.0);
+      assert_eq!(Tuple2::new(1.0 / sqrt5, 2.0 / sqrt5), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
+
+    #[test]
+    fn normalized() {
+      let v0 = Tuple2::new(4.0, 0.0).normalized();
+      assert_eq!(Tuple2::new(1.0, 0.0), v0);
+
+      let v1 = Tuple2::new(1.0, 2.0).normalized();
+      let sqrt5 = f32::sqrt(5.0);
+      assert_eq!(Tuple2::new(1.0 / sqrt5, 2.0 / sqrt5), v1);
+      assert!(cmp_f32(1.0, v1.length()));
+    }
   }
 
-  #[test]
-  fn implements_add() {
-      let a1 = Tuple2::new(3.0, -2.0);
-      let a2 = Tuple2::new(-2.0, 3.0);
-      assert_eq!(Tuple2::new(1.0, 1.0), a1 + a2);
-  }
+  mod traits {
+    use crate::Tuple2;
 
-  #[test]
-  fn implements_sub() {
-      let p1 = Tuple2::new(3.0, 2.0);
-      let p2 = Tuple2::new(5.0, 6.0);
-      assert_eq!(Tuple2::new(-2.0, -4.0), p1 - p2);
+    #[test]
+    fn add() {
+        let a1 = Tuple2::new(3.0, -2.0);
+        let a2 = Tuple2::new(-2.0, 3.0);
+        assert_eq!(Tuple2::new(1.0, 1.0), a1 + a2);
+    }
 
-      let p = Tuple2::new(3.0, 2.0);
-      let v = Tuple2::new(5.0, 6.0);
-      assert_eq!(Tuple2::new(-2.0, -4.0), p - v);
+    #[test]
+    fn sub() {
+        let p1 = Tuple2::new(3.0, 2.0);
+        let p2 = Tuple2::new(5.0, 6.0);
+        assert_eq!(Tuple2::new(-2.0, -4.0), p1 - p2);
 
-      let v1 = Tuple2::new(3.0, 2.0);
-      let v2 = Tuple2::new(5.0, 6.0);
-      assert_eq!(Tuple2::new(-2.0, -4.0), v1 - v2);
-  }
+        let p = Tuple2::new(3.0, 2.0);
+        let v = Tuple2::new(5.0, 6.0);
+        assert_eq!(Tuple2::new(-2.0, -4.0), p - v);
 
-  #[test]
-  fn implements_neg() {
-    let a = Tuple2::new(1.0, -2.0);
-    assert_eq!(Tuple2::new(-1.0, 2.0), -a);
-  }
+        let v1 = Tuple2::new(3.0, 2.0);
+        let v2 = Tuple2::new(5.0, 6.0);
+        assert_eq!(Tuple2::new(-2.0, -4.0), v1 - v2);
+    }
 
-  #[test]
-  fn implements_tuple_mul_f32() {
-    let a = Tuple2::new(1.0, -2.0);
-    assert_eq!(Tuple2::new(3.5, -7.0), a * 3.5);
-    assert_eq!(Tuple2::new(0.5, -1.0), a * 0.5);
-  }
+    #[test]
+    fn neg() {
+      let a = Tuple2::new(1.0, -2.0);
+      assert_eq!(Tuple2::new(-1.0, 2.0), -a);
+    }
 
-  #[test]
-  fn implements_f32_mul_tuple() {
-    let a = Tuple2::new(1.0, -2.0);
-    assert_eq!(Tuple2::new(3.5, -7.0), 3.5 * a);
-    assert_eq!(Tuple2::new(0.5, -1.0), 0.5 * a);
-  }
+    #[test]
+    fn mul_f32() {
+      let a = Tuple2::new(1.0, -2.0);
+      assert_eq!(Tuple2::new(3.5, -7.0), a * 3.5);
+      assert_eq!(Tuple2::new(0.5, -1.0), a * 0.5);
+    }
 
-  #[test]
-  fn implements_mulassign_f32() {
-    let mut a = Tuple2::new(1.0, -2.0);
-    a *= 3.5;
-    assert_eq!(Tuple2::new(3.5, -7.0), a);
-  }
+    #[test]
+    fn f32_mul_tuple() {
+      let a = Tuple2::new(1.0, -2.0);
+      assert_eq!(Tuple2::new(3.5, -7.0), 3.5 * a);
+      assert_eq!(Tuple2::new(0.5, -1.0), 0.5 * a);
+    }
 
-  #[test]
-  fn implements_tuple_div_f32() {
-    let a = Tuple2::new(1.0, -2.0);
-    assert_eq!(Tuple2::new(0.5, -1.0), a / 2.0);
-  }
+    #[test]
+    fn mulassign_f32() {
+      let mut a = Tuple2::new(1.0, -2.0);
+      a *= 3.5;
+      assert_eq!(Tuple2::new(3.5, -7.0), a);
+    }
 
-   #[test]
-  fn implements_divassign_f32() {
-    let mut a = Tuple2::new(1.0, -2.0);
-    a /= 4.0;
-    assert_eq!(Tuple2::new(0.25, -0.5), a);
-  }
+    #[test]
+    fn div_f32() {
+      let a = Tuple2::new(1.0, -2.0);
+      assert_eq!(Tuple2::new(0.5, -1.0), a / 2.0);
+    }
 
-  #[test]
-  fn implements_length_squared() {
-    let vx = Tuple2::new(1.0, 0.0);
-    assert_eq!(1.0, vx.length_squared());
-
-    let vy = Tuple2::new(0.0, 1.0);
-    assert_eq!(1.0, vy.length_squared());
-
-    let v0 = Tuple2::new(1.0, 2.0);
-    assert_eq!(5.0, v0.length_squared());
-
-    let v1 = Tuple2::new(-1.0, -2.0);
-    assert_eq!(5.0, v1.length_squared());
-  }
-
-  #[test]
-  fn implements_length() {
-    let vx = Tuple2::new(1.0, 0.0);
-    assert_eq!(1.0, vx.length());
-
-    let vy = Tuple2::new(0.0, 1.0);
-    assert_eq!(1.0, vy.length());
-
-    let v0 = Tuple2::new(1.0, 2.0);
-    assert_eq!(f32::sqrt(5.0), v0.length());
-
-    let v1 = Tuple2::new(-1.0, -2.0);
-    assert_eq!(f32::sqrt(5.0), v1.length());
-  }
-
-  #[test]
-  fn implements_normalize() {
-    let mut v0 = Tuple2::new(4.0, 0.0);
-    v0.normalize();
-    assert_eq!(Tuple2::new(1.0, 0.0), v0);
-
-    let mut v1 = Tuple2::new(1.0, 2.0);
-    v1.normalize();
-    let sqrt5 = f32::sqrt(5.0);
-    assert_eq!(Tuple2::new(1.0 / sqrt5, 2.0 / sqrt5), v1);
-    assert!(cmp_f32(1.0, v1.length()));
-  }
-
-  #[test]
-  fn implements_normalized() {
-    let v0 = Tuple2::new(4.0, 0.0).normalized();
-    assert_eq!(Tuple2::new(1.0, 0.0), v0);
-
-    let v1 = Tuple2::new(1.0, 2.0).normalized();
-    let sqrt5 = f32::sqrt(5.0);
-    assert_eq!(Tuple2::new(1.0 / sqrt5, 2.0 / sqrt5), v1);
-    assert!(cmp_f32(1.0, v1.length()));
+    #[test]
+    fn divassign_f32() {
+      let mut a = Tuple2::new(1.0, -2.0);
+      a /= 4.0;
+      assert_eq!(Tuple2::new(0.25, -0.5), a);
+    }
   }
 }

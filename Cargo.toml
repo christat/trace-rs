@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 rusty-math = { path = "rusty-math", version = "0.1.0" }
+specs = "0.14.3"

@@ -145,183 +145,177 @@ impl Mul<f32> for Matrix3 {
 
 #[cfg(test)]
 mod tests {
-  use super::{Matrix2, Matrix3, SubmatrixIndexError, Tuple3};
-  use crate::Tuple2;
+  mod methods {
+    use crate::{Matrix2, Matrix3, SubmatrixIndexError, Tuple2, Tuple3};
 
-  #[test]
-  fn implements_constructor() {
-    let mat = Matrix3::new(
-      Tuple3::new(1.0, 5.5, 9.0),
-      Tuple3::new(2.0, 6.5, 10.0),
-      Tuple3::new(3.0, 7.5, 11.0)
-    );
-    assert_eq!(1.0, mat.c0.x());
-    assert_eq!(5.5, mat.c0.y());
-    assert_eq!(7.5, mat.c2.y());
-    assert_eq!(11.0, mat.c2.z());
+    #[test]
+    fn constructor() {
+      let mat = Matrix3::new(
+        Tuple3::new(1.0, 5.5, 9.0),
+        Tuple3::new(2.0, 6.5, 10.0),
+        Tuple3::new(3.0, 7.5, 11.0)
+      );
+      assert_eq!(1.0, mat.c0.x());
+      assert_eq!(5.5, mat.c0.y());
+      assert_eq!(7.5, mat.c2.y());
+      assert_eq!(11.0, mat.c2.z());
+    }
+
+    #[test]
+    fn transpose() {
+      let mut mat_a = Matrix3::new(
+        Tuple3::new(0.0, 9.0, 1.0),
+        Tuple3::new(9.0, 8.0, 8.0),
+        Tuple3::new(3.0, 0.0, 5.0)
+      );
+      let mat_a_t = Matrix3::new(
+        Tuple3::new(0.0, 9.0, 3.0),
+        Tuple3::new(9.0, 8.0, 0.0),
+        Tuple3::new(1.0, 8.0, 5.0),
+      );
+      mat_a.transpose();
+      assert_eq!(mat_a_t, mat_a);
+    }
+
+    #[test]
+    fn transposed() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(0.0, 9.0, 1.0),
+        Tuple3::new(9.0, 8.0, 8.0),
+        Tuple3::new(3.0, 0.0, 5.0)
+      );
+      let mat_a_t = Matrix3::new(
+        Tuple3::new(0.0, 9.0, 3.0),
+        Tuple3::new(9.0, 8.0, 0.0),
+        Tuple3::new(1.0, 8.0, 5.0)
+      );
+      assert_eq!(mat_a_t, mat_a.transposed());
+      assert_eq!(Matrix3::identity(), Matrix3::identity().transposed());
+    }
+
+    #[test]
+    fn submatrix() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(1.0, -3.0, 0.0),
+        Tuple3::new(5.0, 2.0, 6.0),
+        Tuple3::new(0.0, 7.0, -3.0)
+      );
+      let sub_02 = Matrix2::new(
+        Tuple2::new(-3.0, 0.0),
+        Tuple2::new(2.0, 6.0)
+      );
+      assert_eq!(Ok(sub_02), mat_a.submatrix(0, 2));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(3, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(0, 3));
+    }
+
+    #[test]
+    fn minor() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(3.0, 2.0, 6.0),
+        Tuple3::new(5.0, -1.0, -1.0),
+        Tuple3::new(0.0, -7.0, 5.0)
+      );
+      assert_eq!(Ok(25.0), mat_a.minor(1, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.minor(3, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.minor(0, 3));
+    }
+
+    #[test]
+    fn cofactor() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(3.0, 2.0, 6.0),
+        Tuple3::new(5.0, -1.0, -1.0),
+        Tuple3::new(0.0, -7.0, 5.0)
+      );
+      assert_eq!(Ok(-12.0), mat_a.cofactor(0, 0));
+      assert_eq!(Ok(-25.0), mat_a.cofactor(1, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.cofactor(3, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.cofactor(0, 3));
+    }
+
+    #[test]
+    fn determinant() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(1.0, -5.0, 2.0),
+        Tuple3::new(2.0, 8.0, 6.0),
+        Tuple3::new(6.0, -4.0, 4.0)
+      );
+      assert_eq!(Ok(56.0), mat_a.cofactor(0, 0));
+      assert_eq!(Ok(12.0), mat_a.cofactor(0, 1));
+      assert_eq!(Ok(-46.0), mat_a.cofactor(0, 2));
+      assert_eq!(-196.0, mat_a.determinant());
+    }
   }
 
-  #[test]
-  fn implements_equality() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(1.0, 5.0, 9.0),
-      Tuple3::new(2.0, 6.0, 8.0),
-      Tuple3::new(3.0, 7.0, 7.0)
-    );
-    
-    let mat_b = Matrix3::new(
-      Tuple3::new(1.0, 5.0, 9.0),
-      Tuple3::new(2.0, 6.0, 8.0),
-      Tuple3::new(3.0, 7.0, 7.0)
-    );
-    assert_eq!(true, mat_a == mat_b);
+  mod traits {
+    use crate::{Matrix3, Tuple3};
 
-    let mat_c = Matrix3::new(
-      Tuple3::new(2.0, 6.0, 8.0),
-      Tuple3::new(3.0, 7.0, 7.0),
-      Tuple3::new(4.0, 8.0, 7.0)
-    );
-    assert_eq!(false, mat_a == mat_c);
-  }
+    #[test]
+    fn equality() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(1.0, 5.0, 9.0),
+        Tuple3::new(2.0, 6.0, 8.0),
+        Tuple3::new(3.0, 7.0, 7.0)
+      );
+      
+      let mat_b = Matrix3::new(
+        Tuple3::new(1.0, 5.0, 9.0),
+        Tuple3::new(2.0, 6.0, 8.0),
+        Tuple3::new(3.0, 7.0, 7.0)
+      );
+      assert_eq!(true, mat_a == mat_b);
 
-  #[test]
-  fn implements_mul_matrix() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(1.0, 5.0, 9.0),
-      Tuple3::new(2.0, 6.0, 8.0),
-      Tuple3::new(3.0, 7.0, 7.0)
-    );
-    let mat_b = Matrix3::new(
-      Tuple3::new(-2.0, 3.0, 4.0),
-      Tuple3::new(1.0, 2.0, 3.0),
-      Tuple3::new(2.0, 1.0, 6.0)
-    );
+      let mat_c = Matrix3::new(
+        Tuple3::new(2.0, 6.0, 8.0),
+        Tuple3::new(3.0, 7.0, 7.0),
+        Tuple3::new(4.0, 8.0, 7.0)
+      );
+      assert_eq!(false, mat_a == mat_c);
+    }
 
-    let mat_r = Matrix3::new(
-      Tuple3::new(16.0, 36.0, 34.0),
-      Tuple3::new(14.0, 38.0, 46.0),
-      Tuple3::new(22.0, 58.0, 68.0)
-    );
-    assert_eq!(mat_r, mat_a * mat_b);
-  }
+    #[test]
+    fn mul_matrix() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(1.0, 5.0, 9.0),
+        Tuple3::new(2.0, 6.0, 8.0),
+        Tuple3::new(3.0, 7.0, 7.0)
+      );
+      let mat_b = Matrix3::new(
+        Tuple3::new(-2.0, 3.0, 4.0),
+        Tuple3::new(1.0, 2.0, 3.0),
+        Tuple3::new(2.0, 1.0, 6.0)
+      );
 
-  #[test]
-  fn implements_mul_tuple() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(1.0, 2.0, 8.0),
-      Tuple3::new(2.0, 4.0, 6.0),
-      Tuple3::new(3.0, 4.0, 4.0)
-    );
-    let b = Tuple3::new(1.0, 2.0, 3.0);
+      let mat_r = Matrix3::new(
+        Tuple3::new(16.0, 36.0, 34.0),
+        Tuple3::new(14.0, 38.0, 46.0),
+        Tuple3::new(22.0, 58.0, 68.0)
+      );
+      assert_eq!(mat_r, mat_a * mat_b);
+    }
 
-    assert_eq!(Tuple3::new(14.0, 22.0, 32.0), mat_a * b);
-  }
+    #[test]
+    fn mul_tuple() {
+      let mat_a = Matrix3::new(
+        Tuple3::new(1.0, 2.0, 8.0),
+        Tuple3::new(2.0, 4.0, 6.0),
+        Tuple3::new(3.0, 4.0, 4.0)
+      );
+      let b = Tuple3::new(1.0, 2.0, 3.0);
 
-  #[test]
-  fn implements_mul_scalar() {
-    let mat_a = Matrix3::identity();
-    let mat_res = Matrix3::new(
-      Tuple3::new(2.5, 0.0, 0.0),
-      Tuple3::new(0.0, 2.5, 0.0),
-      Tuple3::new(0.0, 0.0, 2.5)
-    );
-    assert_eq!(mat_res, mat_a * 2.5);
-  }
+      assert_eq!(Tuple3::new(14.0, 22.0, 32.0), mat_a * b);
+    }
 
-  #[test]
-  fn implements_identity_constructor() {
-    let identity = Matrix3::identity();
-    let result = Matrix3::new(
-      Tuple3::new(1.0, 0.0, 0.0),
-      Tuple3::new(0.0, 1.0, 0.0),
-      Tuple3::new(0.0, 0.0, 1.0)
-    );
-    assert!(result == identity);
-  }
-
-  #[test]
-  fn implements_transpose() {
-    let mut mat_a = Matrix3::new(
-      Tuple3::new(0.0, 9.0, 1.0),
-      Tuple3::new(9.0, 8.0, 8.0),
-      Tuple3::new(3.0, 0.0, 5.0)
-    );
-    let mat_a_t = Matrix3::new(
-      Tuple3::new(0.0, 9.0, 3.0),
-      Tuple3::new(9.0, 8.0, 0.0),
-      Tuple3::new(1.0, 8.0, 5.0),
-    );
-    mat_a.transpose();
-    assert_eq!(mat_a_t, mat_a);
-  }
-
-  #[test]
-  fn implements_transposed() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(0.0, 9.0, 1.0),
-      Tuple3::new(9.0, 8.0, 8.0),
-      Tuple3::new(3.0, 0.0, 5.0)
-    );
-    let mat_a_t = Matrix3::new(
-      Tuple3::new(0.0, 9.0, 3.0),
-      Tuple3::new(9.0, 8.0, 0.0),
-      Tuple3::new(1.0, 8.0, 5.0)
-    );
-    assert_eq!(mat_a_t, mat_a.transposed());
-    assert_eq!(Matrix3::identity(), Matrix3::identity().transposed());
-  }
-
-  #[test]
-  fn implements_submatrix() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(1.0, -3.0, 0.0),
-      Tuple3::new(5.0, 2.0, 6.0),
-      Tuple3::new(0.0, 7.0, -3.0)
-    );
-    let sub_02 = Matrix2::new(
-      Tuple2::new(-3.0, 0.0),
-      Tuple2::new(2.0, 6.0)
-    );
-    assert_eq!(Ok(sub_02), mat_a.submatrix(0, 2));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(3, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(0, 3));
-  }
-
-  #[test]
-  fn implements_minor() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(3.0, 2.0, 6.0),
-      Tuple3::new(5.0, -1.0, -1.0),
-      Tuple3::new(0.0, -7.0, 5.0)
-    );
-    assert_eq!(Ok(25.0), mat_a.minor(1, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.minor(3, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.minor(0, 3));
-  }
-
-  #[test]
-  fn implements_cofactor() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(3.0, 2.0, 6.0),
-      Tuple3::new(5.0, -1.0, -1.0),
-      Tuple3::new(0.0, -7.0, 5.0)
-    );
-    assert_eq!(Ok(-12.0), mat_a.cofactor(0, 0));
-    assert_eq!(Ok(-25.0), mat_a.cofactor(1, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.cofactor(3, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.cofactor(0, 3));
-  }
-
-  #[test]
-  fn implements_determinant() {
-    let mat_a = Matrix3::new(
-      Tuple3::new(1.0, -5.0, 2.0),
-      Tuple3::new(2.0, 8.0, 6.0),
-      Tuple3::new(6.0, -4.0, 4.0)
-    );
-    assert_eq!(Ok(56.0), mat_a.cofactor(0, 0));
-    assert_eq!(Ok(12.0), mat_a.cofactor(0, 1));
-    assert_eq!(Ok(-46.0), mat_a.cofactor(0, 2));
-    assert_eq!(-196.0, mat_a.determinant());
+    #[test]
+    fn mul_scalar() {
+      let mat_a = Matrix3::identity();
+      let mat_res = Matrix3::new(
+        Tuple3::new(2.5, 0.0, 0.0),
+        Tuple3::new(0.0, 2.5, 0.0),
+        Tuple3::new(0.0, 0.0, 2.5)
+      );
+      assert_eq!(mat_res, mat_a * 2.5);
+    }
   }
 }

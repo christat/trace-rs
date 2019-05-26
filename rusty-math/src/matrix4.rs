@@ -261,341 +261,346 @@ impl Mul<f32> for Matrix4 {
 
 #[cfg(test)]
 mod tests {
-  use super::{Matrix3, Matrix4, SubmatrixIndexError, Tuple4};
-  use crate::Tuple3;
-  use crate::test_utils::{cmp_matrix4, cmp_tuple4};
-  use std::f32::consts::PI;
+  mod methods {
+    use crate::{Matrix3, Matrix4, SubmatrixIndexError, Tuple3, Tuple4};
+    use crate::test_utils::{cmp_matrix4, cmp_tuple4};
+    use std::f32::consts::PI;
 
-  #[test]
-  fn implements_constructor() {
-    let mat = Matrix4::new(
-      Tuple4::new(1.0, 5.5, 9.0, 13.5),
-      Tuple4::new(2.0, 6.5, 10.0, 14.5),
-      Tuple4::new(3.0, 7.5, 11.0, 15.5),
-      Tuple4::new(4.0, 8.5, 12.0, 16.5)
-    );
-    assert_eq!(1.0, mat.c0.x());
-    assert_eq!(4.0, mat.c3.x());
-    assert_eq!(5.5, mat.c0.y());
-    assert_eq!(7.5, mat.c2.y());
-    assert_eq!(11.0, mat.c2.z());
-    assert_eq!(13.5, mat.c0.w());
-    assert_eq!(15.5, mat.c2.w());
+    #[test]
+    fn constructor() {
+      let mat = Matrix4::new(
+        Tuple4::new(1.0, 5.5, 9.0, 13.5),
+        Tuple4::new(2.0, 6.5, 10.0, 14.5),
+        Tuple4::new(3.0, 7.5, 11.0, 15.5),
+        Tuple4::new(4.0, 8.5, 12.0, 16.5)
+      );
+      assert_eq!(1.0, mat.c0.x());
+      assert_eq!(4.0, mat.c3.x());
+      assert_eq!(5.5, mat.c0.y());
+      assert_eq!(7.5, mat.c2.y());
+      assert_eq!(11.0, mat.c2.z());
+      assert_eq!(13.5, mat.c0.w());
+      assert_eq!(15.5, mat.c2.w());
+    }
+
+    #[test]
+    fn identity() {
+      let identity = Matrix4::identity();
+      let result = Matrix4::new(
+        Tuple4::new(1.0, 0.0, 0.0, 0.0),
+        Tuple4::new(0.0, 1.0, 0.0, 0.0),
+        Tuple4::new(0.0, 0.0, 1.0, 0.0),
+        Tuple4::new(0.0, 0.0, 0.0, 1.0)
+      );
+      assert!(result == identity);
+    }
+
+    #[test]
+    fn transpose() {
+      let mut mat_a = Matrix4::new(
+        Tuple4::new(0.0, 9.0, 1.0, 0.0),
+        Tuple4::new(9.0, 8.0, 8.0, 0.0),
+        Tuple4::new(3.0, 0.0, 5.0, 5.0),
+        Tuple4::new(0.0, 8.0, 3.0, 8.0)
+      );
+      let mat_a_t = Matrix4::new(
+        Tuple4::new(0.0, 9.0, 3.0, 0.0),
+        Tuple4::new(9.0, 8.0, 0.0, 8.0),
+        Tuple4::new(1.0, 8.0, 5.0, 3.0),
+        Tuple4::new(0.0, 0.0, 5.0, 8.0)
+      );
+      mat_a.transpose();
+      assert_eq!(mat_a_t, mat_a);
+    }
+
+    #[test]
+    fn transposed() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(0.0, 9.0, 1.0, 0.0),
+        Tuple4::new(9.0, 8.0, 8.0, 0.0),
+        Tuple4::new(3.0, 0.0, 5.0, 5.0),
+        Tuple4::new(0.0, 8.0, 3.0, 8.0)
+      );
+      let mat_a_t = Matrix4::new(
+        Tuple4::new(0.0, 9.0, 3.0, 0.0),
+        Tuple4::new(9.0, 8.0, 0.0, 8.0),
+        Tuple4::new(1.0, 8.0, 5.0, 3.0),
+        Tuple4::new(0.0, 0.0, 5.0, 8.0)
+      );
+      assert_eq!(mat_a_t, mat_a.transposed());
+      assert_eq!(Matrix4::identity(), Matrix4::identity().transposed());
+    }
+
+    #[test]
+    fn submatrix() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(-6.0, -8.0, -1.0, -7.0),
+        Tuple4::new(1.0, 5.0, 0.0, 1.0),
+        Tuple4::new(1.0, 8.0, 8.0, -1.0),
+        Tuple4::new(6.0, 6.0, 2.0, 1.0)
+      );
+      let sub_21 = Matrix3::new(
+        Tuple3::new(-6.0, -8.0, -7.0),
+        Tuple3::new(1.0, 8.0, -1.0),
+        Tuple3::new(6.0, 6.0, 1.0)
+      );
+      assert_eq!(Ok(sub_21), mat_a.submatrix(2, 1));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(4, 0));
+      assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(0, 4));
+    }
+
+    #[test]
+    fn determinant() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(-2.0, -3.0, 1.0, -6.0),
+        Tuple4::new(-8.0, 1.0, 2.0, 7.0),
+        Tuple4::new(3.0, 7.0, -9.0, 7.0),
+        Tuple4::new(5.0, 3.0, 6.0, -9.0)
+      );
+      assert_eq!(Ok(690.0), mat_a.cofactor(0, 0));
+      assert_eq!(Ok(447.0), mat_a.cofactor(0, 1));
+      assert_eq!(Ok(210.0), mat_a.cofactor(0, 2));
+      assert_eq!(Ok(51.0), mat_a.cofactor(0, 3));
+      assert_eq!(-4071.0, mat_a.determinant())
+    }
+
+    #[test]
+    fn inverse() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(-5.0, 1.0, 7.0, 1.0),
+        Tuple4::new(2.0, -5.0, 7.0, -3.0),
+        Tuple4::new(6.0, 1.0, -6.0, 7.0),
+        Tuple4::new(-8.0, 8.0, -7.0, 4.0)
+      );
+      let mat_a_inverse = mat_a.inverse().unwrap();
+      assert_eq!(532.0, mat_a.determinant());
+      assert_eq!(Ok(-160.0), mat_a.cofactor(2, 3));
+      assert_eq!(Ok(105.0), mat_a.cofactor(3, 2));
+      
+      let mat_a_inverse_res = Matrix4::new(
+        Tuple4::new(0.21804512, -0.8082707, -0.07894737, -0.5225564),
+        Tuple4::new(0.45112783, -1.456767, -0.22368422, -0.81390977),
+        Tuple4::new(0.24060151, -0.44360903, -0.05263158, -0.3007519),
+        Tuple4::new(-0.04511278, 0.52067673, 0.19736843, 0.30639097)
+      );
+      assert!(cmp_matrix4(mat_a_inverse_res, mat_a_inverse));
+
+      let mat_b = Matrix4::new(
+        Tuple4::new(8.0, 7.0, -6.0, -3.0),
+        Tuple4::new(-5.0, 5.0, 0.0, 0.0),
+        Tuple4::new(9.0, 6.0, 9.0, -9.0),
+        Tuple4::new(2.0, 1.0, 6.0, -4.0)
+      );
+      let mat_b_inverse_res = Matrix4::new(
+        Tuple4::new(-0.15384616, -0.07692308, 0.35897437, -0.6923077),
+        Tuple4::new(-0.15384616, 0.12307692, 0.35897437, -0.6923077),
+        Tuple4::new(-0.2820513, 0.025641026, 0.43589744, -0.7692308),
+        Tuple4::new(-0.53846157, 0.03076923, 0.9230769, -1.923077)
+      );
+      assert!(cmp_matrix4(mat_b_inverse_res, mat_b.inverse().unwrap()));
+
+      let mat_c = Matrix4::new(
+        Tuple4::new(9.0, -5.0, -4.0, -7.0),
+        Tuple4::new(3.0, -2.0, 9.0, 6.0),
+        Tuple4::new(0.0, -6.0, 6.0, 6.0),
+        Tuple4::new(9.0, -3.0, 4.0, 2.0)
+      );
+      let mat_c_inverse_res = Matrix4::new(
+        Tuple4::new(-0.040740743, -0.07777778, -0.029012347, 0.17777778),
+        Tuple4::new(-0.07777778, 0.033333335, -0.1462963, 0.06666667),
+        Tuple4::new(0.14444445, 0.36666667, -0.10925926, -0.26666668),
+        Tuple4::new(-0.22222224, -0.33333334, 0.12962964, 0.33333334)
+      );
+      assert!(cmp_matrix4(mat_c_inverse_res, mat_c.inverse().unwrap()));
+    }
+
+    #[test]
+    fn math_still_works() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(3.0, 3.0, -4.0, -6.0),
+        Tuple4::new(-9.0, -8.0, 4.0, 5.0),
+        Tuple4::new(7.0, 2.0, 4.0, -1.0),
+        Tuple4::new(3.0, -9.0, 1.0, 1.0)
+      );
+      let mat_b = Matrix4::new(
+        Tuple4::new(8.0, 3.0, 7.0, 6.0),
+        Tuple4::new(2.0, -1.0, 0.0, -2.0),
+        Tuple4::new(2.0, 7.0, 5.0, 0.0),
+        Tuple4::new(2.0, 0.0, 4.0, 5.0)
+      );
+      let mat_c = mat_a * mat_b;
+      assert!(cmp_matrix4(mat_a, mat_c * mat_b.inverse().unwrap()));
+    }
+
+    #[test]
+    fn translation() {
+      let transform = Matrix4::translation(5.0, -3.0, 2.0);
+      let point = Tuple4::point(-3.0, 4.0, 5.0);
+      assert_eq!(Tuple4::point(2.0, 1.0, 7.0), transform * point);
+
+      let transform_inverse = transform.inverse().unwrap();
+      assert_eq!(Tuple4::point(-8.0, 7.0, 3.0), transform_inverse * point);
+
+      let vector = Tuple4::vector(-3.0, 4.0, 5.0);
+      assert_eq!(vector, transform * vector);
+    }
+
+    #[test]
+    fn scaling() {
+      let transform = Matrix4::scaling(2.0, 3.0, 4.0);
+      let point = Tuple4::point(-4.0, 6.0, 8.0);
+      assert_eq!(Tuple4::point(-8.0, 18.0, 32.0), transform * point);
+
+      let vector = Tuple4::vector(-4.0, 6.0, 8.0);
+      assert_eq!(Tuple4::vector(-8.0, 18.0, 32.0), transform * vector);
+
+      let transform_inverse = transform.inverse().unwrap();
+      assert_eq!(Tuple4::vector(-2.0, 2.0, 2.0), transform_inverse * vector);
+    }
+
+    #[test]
+    fn scaling_as_reflection() {
+      let transform = Matrix4::scaling(-1.0, 1.0, 1.0);
+      let point = Tuple4::point(2.0, 3.0, 4.0);
+      assert_eq!(Tuple4::point(-2.0, 3.0, 4.0), transform * point);
+    }
+
+    #[test]
+    fn rotation_x() {
+      let point = Tuple4::point(0.0, 1.0, 0.0);
+      let half_quarter = Matrix4::rotation_x(PI / 4.0);
+      let full_quarter = Matrix4::rotation_x(PI / 2.0);
+      assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0), half_quarter * point));
+      assert!(cmp_tuple4(Tuple4::point(0.0, 0.0, 1.0), full_quarter * point));
+
+      let inverse_half_quarter = half_quarter.inverse().unwrap();
+      assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, -f32::sqrt(2.0)/2.0), inverse_half_quarter * point));
+    }
+
+    #[test]
+    fn rotation_y() {
+      let point = Tuple4::point(0.0, 0.0, 1.0);
+      let half_quarter = Matrix4::rotation_y(PI / 4.0);
+      let full_quarter = Matrix4::rotation_y(PI / 2.0);
+      assert!(cmp_tuple4(Tuple4::point(f32::sqrt(2.0)/2.0, 0.0, f32::sqrt(2.0)/2.0), half_quarter * point));
+      assert!(cmp_tuple4(Tuple4::point(1.0, 0.0, 0.0), full_quarter * point));
+    }
+
+    #[test]
+    fn rotation_z() {
+      let point = Tuple4::point(0.0, 1.0, 0.0);
+      let half_quarter = Matrix4::rotation_z(PI / 4.0);
+      let full_quarter = Matrix4::rotation_z(PI / 2.0);
+      assert!(cmp_tuple4(Tuple4::point(-f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0, 0.0), half_quarter * point));
+      assert!(cmp_tuple4(Tuple4::point(-1.0, 0.0, 0.0), full_quarter * point));
+    }
+
+    #[test]
+    fn shearing() {
+      let transform_xy = Matrix4::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+      let point = Tuple4::point(2.0, 3.0, 4.0);
+      assert!(cmp_tuple4(Tuple4::point(5.0, 3.0, 4.0), transform_xy * point));
+
+      let transform_xz = Matrix4::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+      assert!(cmp_tuple4(Tuple4::point(6.0, 3.0, 4.0), transform_xz * point));
+
+      let transform_yx = Matrix4::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+      assert!(cmp_tuple4(Tuple4::point(2.0, 5.0, 4.0), transform_yx * point));
+
+      let transform_yz = Matrix4::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+      assert!(cmp_tuple4(Tuple4::point(2.0, 7.0, 4.0), transform_yz * point));
+
+      let transform_zx = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+      assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 6.0), transform_zx * point));
+
+      let transform_zy = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+      assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 7.0), transform_zy * point));
+    }
+
+    #[test]
+    fn transform_chaining() {
+      let transform = Matrix4::rotation_x(PI/2.0).scale(5.0, 5.0, 5.0).translate(10.0, 5.0, 7.0);
+      let point = Tuple4::point(1.0, 0.0, 1.0);
+      assert!(cmp_tuple4(Tuple4::point(15.0, 0.0, 7.0), transform * point));
+    }
   }
 
-  #[test]
-  fn implements_equality() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(1.0, 5.0, 9.0, 5.0),
-      Tuple4::new(2.0, 6.0, 8.0, 4.0),
-      Tuple4::new(3.0, 7.0, 7.0, 3.0),
-      Tuple4::new(4.0, 8.0, 6.0, 2.0)
-    );
+  mod traits {
+    use crate::{Matrix4, Tuple4};
     
-    let mat_b = Matrix4::new(
-      Tuple4::new(1.0, 5.0, 9.0, 5.0),
-      Tuple4::new(2.0, 6.0, 8.0, 4.0),
-      Tuple4::new(3.0, 7.0, 7.0, 3.0),
-      Tuple4::new(4.0, 8.0, 6.0, 2.0)
-    );
-    assert_eq!(true, mat_a == mat_b);
+    #[test]
+    fn equality() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(1.0, 5.0, 9.0, 5.0),
+        Tuple4::new(2.0, 6.0, 8.0, 4.0),
+        Tuple4::new(3.0, 7.0, 7.0, 3.0),
+        Tuple4::new(4.0, 8.0, 6.0, 2.0)
+      );
+      
+      let mat_b = Matrix4::new(
+        Tuple4::new(1.0, 5.0, 9.0, 5.0),
+        Tuple4::new(2.0, 6.0, 8.0, 4.0),
+        Tuple4::new(3.0, 7.0, 7.0, 3.0),
+        Tuple4::new(4.0, 8.0, 6.0, 2.0)
+      );
+      assert_eq!(true, mat_a == mat_b);
 
-    let mat_c = Matrix4::new(
-      Tuple4::new(2.0, 6.0, 8.0, 4.0),
-      Tuple4::new(3.0, 7.0, 7.0, 3.0),
-      Tuple4::new(4.0, 8.0, 7.0, 2.0),
-      Tuple4::new(5.0, 9.0, 5.0, 1.0)
-    );
-    assert_eq!(false, mat_a == mat_c);
-  }
+      let mat_c = Matrix4::new(
+        Tuple4::new(2.0, 6.0, 8.0, 4.0),
+        Tuple4::new(3.0, 7.0, 7.0, 3.0),
+        Tuple4::new(4.0, 8.0, 7.0, 2.0),
+        Tuple4::new(5.0, 9.0, 5.0, 1.0)
+      );
+      assert_eq!(false, mat_a == mat_c);
+    }
 
-  #[test]
-  fn implements_mul_matrix() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(1.0, 5.0, 9.0, 5.0),
-      Tuple4::new(2.0, 6.0, 8.0, 4.0),
-      Tuple4::new(3.0, 7.0, 7.0, 3.0),
-      Tuple4::new(4.0, 8.0, 6.0, 2.0)
-    );
-    let mat_b = Matrix4::new(
-      Tuple4::new(-2.0, 3.0, 4.0, 1.0),
-      Tuple4::new(1.0, 2.0, 3.0, 2.0),
-      Tuple4::new(2.0, 1.0, 6.0, 7.0),
-      Tuple4::new(3.0, -1.0, 5.0, 8.0)
-    );
+    #[test]
+    fn mul_matrix() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(1.0, 5.0, 9.0, 5.0),
+        Tuple4::new(2.0, 6.0, 8.0, 4.0),
+        Tuple4::new(3.0, 7.0, 7.0, 3.0),
+        Tuple4::new(4.0, 8.0, 6.0, 2.0)
+      );
+      let mat_b = Matrix4::new(
+        Tuple4::new(-2.0, 3.0, 4.0, 1.0),
+        Tuple4::new(1.0, 2.0, 3.0, 2.0),
+        Tuple4::new(2.0, 1.0, 6.0, 7.0),
+        Tuple4::new(3.0, -1.0, 5.0, 8.0)
+      );
 
-    let mat_r = Matrix4::new(
-      Tuple4::new(20.0, 44.0, 40.0, 16.0),
-      Tuple4::new(22.0, 54.0, 58.0, 26.0),
-      Tuple4::new(50.0, 114.0, 110.0, 46.0),
-      Tuple4::new(48.0, 108.0, 102.0, 42.0)
-    );
-    assert_eq!(mat_r, mat_a * mat_b);
-  }
+      let mat_r = Matrix4::new(
+        Tuple4::new(20.0, 44.0, 40.0, 16.0),
+        Tuple4::new(22.0, 54.0, 58.0, 26.0),
+        Tuple4::new(50.0, 114.0, 110.0, 46.0),
+        Tuple4::new(48.0, 108.0, 102.0, 42.0)
+      );
+      assert_eq!(mat_r, mat_a * mat_b);
+    }
 
-  #[test]
-  fn implements_mul_tuple() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(1.0, 2.0, 8.0, 0.0),
-      Tuple4::new(2.0, 4.0, 6.0, 0.0),
-      Tuple4::new(3.0, 4.0, 4.0, 0.0),
-      Tuple4::new(4.0, 2.0, 1.0, 1.0)
-    );
-    let b = Tuple4::new(1.0, 2.0, 3.0, 1.0);
+    #[test]
+    fn mul_tuple() {
+      let mat_a = Matrix4::new(
+        Tuple4::new(1.0, 2.0, 8.0, 0.0),
+        Tuple4::new(2.0, 4.0, 6.0, 0.0),
+        Tuple4::new(3.0, 4.0, 4.0, 0.0),
+        Tuple4::new(4.0, 2.0, 1.0, 1.0)
+      );
+      let b = Tuple4::new(1.0, 2.0, 3.0, 1.0);
 
-    assert_eq!(Tuple4::new(18.0, 24.0, 33.0, 1.0), mat_a * b);
-  }
+      assert_eq!(Tuple4::new(18.0, 24.0, 33.0, 1.0), mat_a * b);
+    }
 
-  #[test]
-  fn implements_mul_scalar() {
-    let mat_a = Matrix4::identity();
-    let mat_res = Matrix4::new(
-      Tuple4::new(2.5, 0.0, 0.0, 0.0),
-      Tuple4::new(0.0, 2.5, 0.0, 0.0),
-      Tuple4::new(0.0, 0.0, 2.5, 0.0),
-      Tuple4::new(0.0, 0.0, 0.0, 2.5)
-    );
-    assert_eq!(mat_res, mat_a * 2.5);
-  }
-
-  #[test]
-  fn implements_identity_constructor() {
-    let identity = Matrix4::identity();
-    let result = Matrix4::new(
-      Tuple4::new(1.0, 0.0, 0.0, 0.0),
-      Tuple4::new(0.0, 1.0, 0.0, 0.0),
-      Tuple4::new(0.0, 0.0, 1.0, 0.0),
-      Tuple4::new(0.0, 0.0, 0.0, 1.0)
-    );
-    assert!(result == identity);
-  }
-
-  #[test]
-  fn implements_transpose() {
-    let mut mat_a = Matrix4::new(
-      Tuple4::new(0.0, 9.0, 1.0, 0.0),
-      Tuple4::new(9.0, 8.0, 8.0, 0.0),
-      Tuple4::new(3.0, 0.0, 5.0, 5.0),
-      Tuple4::new(0.0, 8.0, 3.0, 8.0)
-    );
-    let mat_a_t = Matrix4::new(
-      Tuple4::new(0.0, 9.0, 3.0, 0.0),
-      Tuple4::new(9.0, 8.0, 0.0, 8.0),
-      Tuple4::new(1.0, 8.0, 5.0, 3.0),
-      Tuple4::new(0.0, 0.0, 5.0, 8.0)
-    );
-    mat_a.transpose();
-    assert_eq!(mat_a_t, mat_a);
-  }
-
-  #[test]
-  fn implements_transposed() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(0.0, 9.0, 1.0, 0.0),
-      Tuple4::new(9.0, 8.0, 8.0, 0.0),
-      Tuple4::new(3.0, 0.0, 5.0, 5.0),
-      Tuple4::new(0.0, 8.0, 3.0, 8.0)
-    );
-    let mat_a_t = Matrix4::new(
-      Tuple4::new(0.0, 9.0, 3.0, 0.0),
-      Tuple4::new(9.0, 8.0, 0.0, 8.0),
-      Tuple4::new(1.0, 8.0, 5.0, 3.0),
-      Tuple4::new(0.0, 0.0, 5.0, 8.0)
-    );
-    assert_eq!(mat_a_t, mat_a.transposed());
-    assert_eq!(Matrix4::identity(), Matrix4::identity().transposed());
-  }
-
-  #[test]
-  fn implements_submatrix() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(-6.0, -8.0, -1.0, -7.0),
-      Tuple4::new(1.0, 5.0, 0.0, 1.0),
-      Tuple4::new(1.0, 8.0, 8.0, -1.0),
-      Tuple4::new(6.0, 6.0, 2.0, 1.0)
-    );
-    let sub_21 = Matrix3::new(
-      Tuple3::new(-6.0, -8.0, -7.0),
-      Tuple3::new(1.0, 8.0, -1.0),
-      Tuple3::new(6.0, 6.0, 1.0)
-    );
-    assert_eq!(Ok(sub_21), mat_a.submatrix(2, 1));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(4, 0));
-    assert_eq!(Err(SubmatrixIndexError), mat_a.submatrix(0, 4));
-  }
-
-  #[test]
-  fn implements_determinant() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(-2.0, -3.0, 1.0, -6.0),
-      Tuple4::new(-8.0, 1.0, 2.0, 7.0),
-      Tuple4::new(3.0, 7.0, -9.0, 7.0),
-      Tuple4::new(5.0, 3.0, 6.0, -9.0)
-    );
-    assert_eq!(Ok(690.0), mat_a.cofactor(0, 0));
-    assert_eq!(Ok(447.0), mat_a.cofactor(0, 1));
-    assert_eq!(Ok(210.0), mat_a.cofactor(0, 2));
-    assert_eq!(Ok(51.0), mat_a.cofactor(0, 3));
-    assert_eq!(-4071.0, mat_a.determinant())
-  }
-
-  #[test]
-  fn implements_inverse() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(-5.0, 1.0, 7.0, 1.0),
-      Tuple4::new(2.0, -5.0, 7.0, -3.0),
-      Tuple4::new(6.0, 1.0, -6.0, 7.0),
-      Tuple4::new(-8.0, 8.0, -7.0, 4.0)
-    );
-    let mat_a_inverse = mat_a.inverse().unwrap();
-    assert_eq!(532.0, mat_a.determinant());
-    assert_eq!(Ok(-160.0), mat_a.cofactor(2, 3));
-    assert_eq!(Ok(105.0), mat_a.cofactor(3, 2));
-    
-    let mat_a_inverse_res = Matrix4::new(
-      Tuple4::new(0.21804512, -0.8082707, -0.07894737, -0.5225564),
-      Tuple4::new(0.45112783, -1.456767, -0.22368422, -0.81390977),
-      Tuple4::new(0.24060151, -0.44360903, -0.05263158, -0.3007519),
-      Tuple4::new(-0.04511278, 0.52067673, 0.19736843, 0.30639097)
-    );
-    assert!(cmp_matrix4(mat_a_inverse_res, mat_a_inverse));
-
-    let mat_b = Matrix4::new(
-      Tuple4::new(8.0, 7.0, -6.0, -3.0),
-      Tuple4::new(-5.0, 5.0, 0.0, 0.0),
-      Tuple4::new(9.0, 6.0, 9.0, -9.0),
-      Tuple4::new(2.0, 1.0, 6.0, -4.0)
-    );
-    let mat_b_inverse_res = Matrix4::new(
-      Tuple4::new(-0.15384616, -0.07692308, 0.35897437, -0.6923077),
-      Tuple4::new(-0.15384616, 0.12307692, 0.35897437, -0.6923077),
-      Tuple4::new(-0.2820513, 0.025641026, 0.43589744, -0.7692308),
-      Tuple4::new(-0.53846157, 0.03076923, 0.9230769, -1.923077)
-    );
-    assert!(cmp_matrix4(mat_b_inverse_res, mat_b.inverse().unwrap()));
-
-    let mat_c = Matrix4::new(
-      Tuple4::new(9.0, -5.0, -4.0, -7.0),
-      Tuple4::new(3.0, -2.0, 9.0, 6.0),
-      Tuple4::new(0.0, -6.0, 6.0, 6.0),
-      Tuple4::new(9.0, -3.0, 4.0, 2.0)
-    );
-    let mat_c_inverse_res = Matrix4::new(
-      Tuple4::new(-0.040740743, -0.07777778, -0.029012347, 0.17777778),
-      Tuple4::new(-0.07777778, 0.033333335, -0.1462963, 0.06666667),
-      Tuple4::new(0.14444445, 0.36666667, -0.10925926, -0.26666668),
-      Tuple4::new(-0.22222224, -0.33333334, 0.12962964, 0.33333334)
-    );
-    assert!(cmp_matrix4(mat_c_inverse_res, mat_c.inverse().unwrap()));
-  }
-
-  #[test]
-  fn math_still_works() {
-    let mat_a = Matrix4::new(
-      Tuple4::new(3.0, 3.0, -4.0, -6.0),
-      Tuple4::new(-9.0, -8.0, 4.0, 5.0),
-      Tuple4::new(7.0, 2.0, 4.0, -1.0),
-      Tuple4::new(3.0, -9.0, 1.0, 1.0)
-    );
-    let mat_b = Matrix4::new(
-      Tuple4::new(8.0, 3.0, 7.0, 6.0),
-      Tuple4::new(2.0, -1.0, 0.0, -2.0),
-      Tuple4::new(2.0, 7.0, 5.0, 0.0),
-      Tuple4::new(2.0, 0.0, 4.0, 5.0)
-    );
-    let mat_c = mat_a * mat_b;
-    assert!(cmp_matrix4(mat_a, mat_c * mat_b.inverse().unwrap()));
-  }
-
-  #[test]
-  fn implements_translation() {
-    let transform = Matrix4::translation(5.0, -3.0, 2.0);
-    let point = Tuple4::point(-3.0, 4.0, 5.0);
-    assert_eq!(Tuple4::point(2.0, 1.0, 7.0), transform * point);
-
-    let transform_inverse = transform.inverse().unwrap();
-    assert_eq!(Tuple4::point(-8.0, 7.0, 3.0), transform_inverse * point);
-
-    let vector = Tuple4::vector(-3.0, 4.0, 5.0);
-    assert_eq!(vector, transform * vector);
-  }
-
-  #[test]
-  fn implements_scaling() {
-    let transform = Matrix4::scaling(2.0, 3.0, 4.0);
-    let point = Tuple4::point(-4.0, 6.0, 8.0);
-    assert_eq!(Tuple4::point(-8.0, 18.0, 32.0), transform * point);
-
-    let vector = Tuple4::vector(-4.0, 6.0, 8.0);
-    assert_eq!(Tuple4::vector(-8.0, 18.0, 32.0), transform * vector);
-
-    let transform_inverse = transform.inverse().unwrap();
-    assert_eq!(Tuple4::vector(-2.0, 2.0, 2.0), transform_inverse * vector);
-  }
-
-  #[test]
-  fn scaling_as_reflection() {
-    let transform = Matrix4::scaling(-1.0, 1.0, 1.0);
-    let point = Tuple4::point(2.0, 3.0, 4.0);
-    assert_eq!(Tuple4::point(-2.0, 3.0, 4.0), transform * point);
-  }
-
-  #[test]
-  fn implements_rotation_x() {
-    let point = Tuple4::point(0.0, 1.0, 0.0);
-    let half_quarter = Matrix4::rotation_x(PI / 4.0);
-    let full_quarter = Matrix4::rotation_x(PI / 2.0);
-    assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0), half_quarter * point));
-    assert!(cmp_tuple4(Tuple4::point(0.0, 0.0, 1.0), full_quarter * point));
-
-    let inverse_half_quarter = half_quarter.inverse().unwrap();
-    assert!(cmp_tuple4(Tuple4::point(0.0, f32::sqrt(2.0)/2.0, -f32::sqrt(2.0)/2.0), inverse_half_quarter * point));
-  }
-
-  #[test]
-  fn implements_rotation_y() {
-    let point = Tuple4::point(0.0, 0.0, 1.0);
-    let half_quarter = Matrix4::rotation_y(PI / 4.0);
-    let full_quarter = Matrix4::rotation_y(PI / 2.0);
-    assert!(cmp_tuple4(Tuple4::point(f32::sqrt(2.0)/2.0, 0.0, f32::sqrt(2.0)/2.0), half_quarter * point));
-    assert!(cmp_tuple4(Tuple4::point(1.0, 0.0, 0.0), full_quarter * point));
-  }
-
-  #[test]
-  fn implements_rotation_z() {
-    let point = Tuple4::point(0.0, 1.0, 0.0);
-    let half_quarter = Matrix4::rotation_z(PI / 4.0);
-    let full_quarter = Matrix4::rotation_z(PI / 2.0);
-    assert!(cmp_tuple4(Tuple4::point(-f32::sqrt(2.0)/2.0, f32::sqrt(2.0)/2.0, 0.0), half_quarter * point));
-    assert!(cmp_tuple4(Tuple4::point(-1.0, 0.0, 0.0), full_quarter * point));
-  }
-
-  #[test]
-  fn implemenst_shearing() {
-    let transform_xy = Matrix4::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    let point = Tuple4::point(2.0, 3.0, 4.0);
-    assert!(cmp_tuple4(Tuple4::point(5.0, 3.0, 4.0), transform_xy * point));
-
-    let transform_xz = Matrix4::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
-    assert!(cmp_tuple4(Tuple4::point(6.0, 3.0, 4.0), transform_xz * point));
-
-    let transform_yx = Matrix4::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-    assert!(cmp_tuple4(Tuple4::point(2.0, 5.0, 4.0), transform_yx * point));
-
-    let transform_yz = Matrix4::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
-    assert!(cmp_tuple4(Tuple4::point(2.0, 7.0, 4.0), transform_yz * point));
-
-    let transform_zx = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 6.0), transform_zx * point));
-
-    let transform_zy = Matrix4::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-    assert!(cmp_tuple4(Tuple4::point(2.0, 3.0, 7.0), transform_zy * point));
-  }
-
-  #[test]
-  fn implements_chained_transforms() {
-    let transform = Matrix4::rotation_x(PI/2.0).scale(5.0, 5.0, 5.0).translate(10.0, 5.0, 7.0);
-    let point = Tuple4::point(1.0, 0.0, 1.0);
-    assert!(cmp_tuple4(Tuple4::point(15.0, 0.0, 7.0), transform * point));
+    #[test]
+    fn mul_scalar() {
+      let mat_a = Matrix4::identity();
+      let mat_res = Matrix4::new(
+        Tuple4::new(2.5, 0.0, 0.0, 0.0),
+        Tuple4::new(0.0, 2.5, 0.0, 0.0),
+        Tuple4::new(0.0, 0.0, 2.5, 0.0),
+        Tuple4::new(0.0, 0.0, 0.0, 2.5)
+      );
+      assert_eq!(mat_res, mat_a * 2.5);
+    }
   }
 }

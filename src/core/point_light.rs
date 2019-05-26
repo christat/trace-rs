@@ -1,6 +1,4 @@
-extern crate rusty_math as rm;
-
-use crate::Color;
+use crate::components::Color;
 use rm::Tuple4;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -23,7 +21,7 @@ mod tests {
   use super::{Color, PointLight, Tuple4};
 
   #[test]
-  fn implements_constructor() {
+  fn constructor() {
     let position = Tuple4::point(0.0, 0.0, 0.0);
     let color = Color::new(1.0, 1.0, 1.0);
     let light = PointLight::new(position, color);

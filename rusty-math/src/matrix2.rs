@@ -90,123 +90,129 @@ impl Mul<f32> for Matrix2 {
 
 #[cfg(test)]
 mod tests {
-  use super::{Matrix2, Tuple2};
+  mod methods {
+    use crate::{Matrix2, Tuple2};
 
-  #[test]
-  fn implements_constructor() {
-    let mat = Matrix2::new(
-      Tuple2::new(1.0, 5.5),
-      Tuple2::new(2.0, 6.5)
-    );
-    assert_eq!(1.0, mat.c0.x());
-    assert_eq!(5.5, mat.c0.y());
-    assert_eq!(2.0, mat.c1.x());
-    assert_eq!(6.5, mat.c1.y());
+    #[test]
+    fn constructor() {
+      let mat = Matrix2::new(
+        Tuple2::new(1.0, 5.5),
+        Tuple2::new(2.0, 6.5)
+      );
+      assert_eq!(1.0, mat.c0.x());
+      assert_eq!(5.5, mat.c0.y());
+      assert_eq!(2.0, mat.c1.x());
+      assert_eq!(6.5, mat.c1.y());
+    }
+
+    #[test]
+    fn identity() {
+      let identity = Matrix2::identity();
+      let result = Matrix2::new(
+        Tuple2::new(1.0, 0.0),
+        Tuple2::new(0.0, 1.0)
+      );
+      assert!(result == identity);
+    }
+
+    #[test]
+    fn transpose() {
+      let mut mat_a = Matrix2::new(
+        Tuple2::new(0.0, 9.0),
+        Tuple2::new(9.0, 8.0)
+      );
+      let mat_a_t = Matrix2::new(
+        Tuple2::new(0.0, 9.0),
+        Tuple2::new(9.0, 8.0),
+      );
+      mat_a.transpose();
+      assert_eq!(mat_a_t, mat_a);
+    }
+
+    #[test]
+    fn transposed() {
+      let mat_a = Matrix2::new(
+        Tuple2::new(0.0, 9.0),
+        Tuple2::new(9.0, 8.0)
+      );
+      let mat_a_t = Matrix2::new(
+        Tuple2::new(0.0, 9.0),
+        Tuple2::new(9.0, 8.0)
+      );
+      assert_eq!(mat_a_t, mat_a.transposed());
+      assert_eq!(Matrix2::identity(), Matrix2::identity().transposed());
+    }
+
+    #[test]
+    fn determinant() {
+      let mat_a = Matrix2::new(
+        Tuple2::new(1.0, -3.0),
+        Tuple2::new(5.0, 2.0)
+      );
+      assert_eq!(17.0, mat_a.determinant());
+    }
   }
 
-  #[test]
-  fn implements_equality() {
-    let mat_a = Matrix2::new(
-      Tuple2::new(1.0, 5.0),
-      Tuple2::new(2.0, 6.0)
-    );
-    
-    let mat_b = Matrix2::new(
-      Tuple2::new(1.0, 5.0),
-      Tuple2::new(2.0, 6.0)
-    );
-    assert_eq!(true, mat_a == mat_b);
+  mod traits {
+    use crate::{Matrix2, Tuple2};
 
-    let mat_c = Matrix2::new(
-      Tuple2::new(2.0, 6.0),
-      Tuple2::new(3.0, 7.0)
-    );
-    assert_eq!(false, mat_a == mat_c);
-  }
+    #[test]
+    fn equality() {
+      let mat_a = Matrix2::new(
+        Tuple2::new(1.0, 5.0),
+        Tuple2::new(2.0, 6.0)
+      );
+      
+      let mat_b = Matrix2::new(
+        Tuple2::new(1.0, 5.0),
+        Tuple2::new(2.0, 6.0)
+      );
+      assert_eq!(true, mat_a == mat_b);
 
-  #[test]
-  fn implements_mul_matrix() {
-    let mat_a = Matrix2::new(
-      Tuple2::new(1.0, 5.0),
-      Tuple2::new(2.0, 6.0)
-    );
-    let mat_b = Matrix2::new(
-      Tuple2::new(-2.0, 3.0),
-      Tuple2::new(1.0, 2.0)
-    );
+      let mat_c = Matrix2::new(
+        Tuple2::new(2.0, 6.0),
+        Tuple2::new(3.0, 7.0)
+      );
+      assert_eq!(false, mat_a == mat_c);
+    }
 
-    let mat_r = Matrix2::new(
-      Tuple2::new(4.0, 8.0),
-      Tuple2::new(5.0, 17.0)
-    );
-    assert_eq!(mat_r, mat_a * mat_b);
-  }
+    #[test]
+    fn mul_matrix() {
+      let mat_a = Matrix2::new(
+        Tuple2::new(1.0, 5.0),
+        Tuple2::new(2.0, 6.0)
+      );
+      let mat_b = Matrix2::new(
+        Tuple2::new(-2.0, 3.0),
+        Tuple2::new(1.0, 2.0)
+      );
 
-  #[test]
-  fn implements_mul_tuple() {
-    let mat_a = Matrix2::new(
-      Tuple2::new(1.0, 2.0),
-      Tuple2::new(2.0, 4.0)
-    );
-    let b = Tuple2::new(1.0, 2.0);
+      let mat_r = Matrix2::new(
+        Tuple2::new(4.0, 8.0),
+        Tuple2::new(5.0, 17.0)
+      );
+      assert_eq!(mat_r, mat_a * mat_b);
+    }
 
-    assert_eq!(Tuple2::new(5.0, 10.0), mat_a * b);
-  }
+    #[test]
+    fn mul_tuple() {
+      let mat_a = Matrix2::new(
+        Tuple2::new(1.0, 2.0),
+        Tuple2::new(2.0, 4.0)
+      );
+      let b = Tuple2::new(1.0, 2.0);
 
-  #[test]
-  fn implements_mul_scalar() {
-    let mat_a = Matrix2::identity();
-    let mat_res = Matrix2::new(
-      Tuple2::new(2.5, 0.0),
-      Tuple2::new(0.0, 2.5)
-    );
-    assert_eq!(mat_res, mat_a * 2.5);
-  }
+      assert_eq!(Tuple2::new(5.0, 10.0), mat_a * b);
+    }
 
-  #[test]
-  fn implements_identity_constructor() {
-    let identity = Matrix2::identity();
-    let result = Matrix2::new(
-      Tuple2::new(1.0, 0.0),
-      Tuple2::new(0.0, 1.0)
-    );
-    assert!(result == identity);
-  }
-
-  #[test]
-  fn implements_transpose() {
-    let mut mat_a = Matrix2::new(
-      Tuple2::new(0.0, 9.0),
-      Tuple2::new(9.0, 8.0)
-    );
-    let mat_a_t = Matrix2::new(
-      Tuple2::new(0.0, 9.0),
-      Tuple2::new(9.0, 8.0),
-    );
-    mat_a.transpose();
-    assert_eq!(mat_a_t, mat_a);
-  }
-
-  #[test]
-  fn implements_transposed() {
-    let mat_a = Matrix2::new(
-      Tuple2::new(0.0, 9.0),
-      Tuple2::new(9.0, 8.0)
-    );
-    let mat_a_t = Matrix2::new(
-      Tuple2::new(0.0, 9.0),
-      Tuple2::new(9.0, 8.0)
-    );
-    assert_eq!(mat_a_t, mat_a.transposed());
-    assert_eq!(Matrix2::identity(), Matrix2::identity().transposed());
-  }
-
-  #[test]
-  fn implements_determinant() {
-    let mat_a = Matrix2::new(
-      Tuple2::new(1.0, -3.0),
-      Tuple2::new(5.0, 2.0)
-    );
-    assert_eq!(17.0, mat_a.determinant());
+    #[test]
+    fn mul_scalar() {
+      let mat_a = Matrix2::identity();
+      let mat_res = Matrix2::new(
+        Tuple2::new(2.5, 0.0),
+        Tuple2::new(0.0, 2.5)
+      );
+      assert_eq!(mat_res, mat_a * 2.5);
+    }
   }
 }

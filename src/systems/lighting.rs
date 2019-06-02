@@ -1,5 +1,5 @@
 use crate::components::{BLACK, Color, Phong};
-use crate::core::{PointLight};
+use crate::resources::{PointLight};
 use rm::Tuple4;
 
 pub fn lighting(mat: &Phong, light: &PointLight, point: &Tuple4, eye_v: &Tuple4, normal_v: &Tuple4) -> Color {

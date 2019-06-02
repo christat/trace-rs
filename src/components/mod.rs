@@ -9,5 +9,5 @@ pub use aabb::AABB;
 pub use color::{Color, BLACK};
 pub use material::{Material, MaterialType, Phong};
 pub use position::Position;
-pub use shape::Shape;
+pub use shape::{Shape, SphereShape};
 pub use transform::Transform;

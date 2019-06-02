@@ -2,7 +2,7 @@ use rm::Tuple4;
 use specs::{Component, VecStorage};
 
 #[derive(Debug)]
-pub struct Position(Tuple4);
+pub struct Position(pub Tuple4);
 
 impl Component for Position {
     type Storage = VecStorage<Self>;

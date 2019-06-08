@@ -1,27 +1,43 @@
-use specs::{Read, System, Write};
-use crate::resources::{Camera, Tiles, Tile, DEFAULT_TILE_SIZE};
+use crate::components::{Tile, DEFAULT_TILE_SIZE};
+use crate::resources::Camera;
+use specs::{Entities, Read, System, WriteStorage};
 
 /// Splits a given scene's representable grid into tiles of aggregated pixels;
 /// This helps the render system achieve greater data locality per thread.
 /// Each tile uses 16x16 pixels unless the image is not exactly divisible.
 /// In the latter case, varied sizes of boundary tiles are generated.
-pub struct Tiling;
+pub struct TilingSystem;
 
-impl<'a> System<'a> for Tiling {
-  type SystemData = (
-    Read<'a, Camera>,
-    Write<'a, Tiles>
-  );
+impl<'a> System<'a> for TilingSystem {
+  type SystemData = (Entities<'a>, Read<'a, Camera>, WriteStorage<'a, Tile>);
 
-  fn run(&mut self, data: Self::SystemData) {
-    let (camera, mut tiles) = data;
-
-    let height = camera.v_size;
-    let width = camera.h_size;
-    
-    for y in (0..height).step_by(DEFAULT_TILE_SIZE) {
-      for x in (0..width).step_by(DEFAULT_TILE_SIZE) {
-        tiles.mut_vector().push(Tile { x, y });
+  fn run(&mut self, (entities, camera, mut tiles): Self::SystemData) {
+    let tile_size = DEFAULT_TILE_SIZE as u16;
+    for y_start in (0..camera.v_size).step_by(DEFAULT_TILE_SIZE) {
+      for x_start in (0..camera.h_size).step_by(DEFAULT_TILE_SIZE) {
+        let x_span = x_start + tile_size;
+        let y_span = y_start + tile_size;
+        let x_end = if x_span <= camera.h_size {
+          x_span
+        } else {
+          camera.h_size
+        };
+        let y_end = if y_span <= camera.v_size {
+          y_span
+        } else {
+          camera.v_size
+        };
+        tiles
+          .insert(
+            entities.create(),
+            Tile {
+              x_start,
+              x_end,
+              y_start,
+              y_end,
+            },
+          )
+          .unwrap();
       }
     }
   }
@@ -29,18 +45,25 @@ impl<'a> System<'a> for Tiling {
 
 #[cfg(test)]
 mod tests {
-  use specs::{DispatcherBuilder, Read, System, World};
-  use crate::resources::{Camera, Tiles, Tile};
-  use super::Tiling;
+  use super::TilingSystem;
+  use crate::components::Tile;
+  use crate::resources::Camera;
+  use specs::{DispatcherBuilder, Join, Read, ReadStorage, System, World};
 
-  type ExpectedTiles = Tiles;
+  type ExpectedTiles = Vec<Tile>;
   struct AssertTiles;
   impl<'a> System<'a> for AssertTiles {
-    type SystemData = (Read<'a, ExpectedTiles>, Read<'a, Tiles>);
+    type SystemData = (Read<'a, ExpectedTiles>, ReadStorage<'a, Tile>);
 
     fn run(&mut self, data: Self::SystemData) {
       let (expected_tiles, tiles) = data;
-      assert_eq!(expected_tiles.slice(), tiles.slice());
+
+      let mut tile_count = 0;
+      for tile in tiles.join() {
+        assert!(expected_tiles.contains(tile));
+        tile_count += 1;
+      }
+      assert_eq!(expected_tiles.len(), tile_count);
     }
   }
 
@@ -48,10 +71,10 @@ mod tests {
     let mut world = World::new();
     world.add_resource(camera);
     world.add_resource(expected_tiles);
-    world.add_resource(Tiles::default());
-    
+    world.register::<Tile>();
+
     let mut dispatcher = DispatcherBuilder::new()
-      .with(Tiling, "tiling", &[])
+      .with(TilingSystem, "tiling", &[])
       .with(AssertTiles, "assert_tiles", &["tiling"])
       .build();
 
@@ -60,39 +83,85 @@ mod tests {
   }
 
   #[test]
-  fn tiling_divisible() {
+  fn divisible_resolution() {
     let mut camera = Camera::default();
     camera.h_size = 32;
     camera.v_size = 32;
 
-    let expected_tiles = ExpectedTiles::new(
-      vec!(
-        Tile { x: 0, y: 0 },
-        Tile { x: 16, y: 0 },
-        Tile { x: 0, y: 16 },
-        Tile { x: 16, y: 16 }
-      )
-    );
+    let expected_tiles = vec![
+      Tile {
+        x_start: 0,
+        x_end: 16,
+        y_start: 0,
+        y_end: 16,
+      },
+      Tile {
+        x_start: 16,
+        x_end: 32,
+        y_start: 0,
+        y_end: 16,
+      },
+      Tile {
+        x_start: 0,
+        x_end: 16,
+        y_start: 16,
+        y_end: 32,
+      },
+      Tile {
+        x_start: 16,
+        x_end: 32,
+        y_start: 16,
+        y_end: 32,
+      },
+    ];
 
     test_tiling(camera, expected_tiles);
   }
 
   #[test]
-  fn tiling_non_divisible() {
+  fn non_divisible_resolution() {
     let mut camera = Camera::default();
     camera.h_size = 39;
     camera.v_size = 19;
 
-    let expected_tiles = ExpectedTiles::new(
-      vec!(
-        Tile { x: 0, y: 0 },
-        Tile { x: 16, y: 0 },
-        Tile { x: 32, y: 0 },
-        Tile { x: 0, y: 16 },
-        Tile { x: 16, y: 16 },
-        Tile { x: 32, y: 16 }
-      )
-    );
+    let expected_tiles = vec![
+      Tile {
+        x_start: 0,
+        x_end: 16,
+        y_start: 0,
+        y_end: 16,
+      },
+      Tile {
+        x_start: 16,
+        x_end: 32,
+        y_start: 0,
+        y_end: 16,
+      },
+      Tile {
+        x_start: 32,
+        x_end: 39,
+        y_start: 0,
+        y_end: 16,
+      },
+      Tile {
+        x_start: 0,
+        x_end: 16,
+        y_start: 16,
+        y_end: 19,
+      },
+      Tile {
+        x_start: 16,
+        x_end: 32,
+        y_start: 16,
+        y_end: 19,
+      },
+      Tile {
+        x_start: 32,
+        x_end: 39,
+        y_start: 16,
+        y_end: 19,
+      },
+    ];
 
     test_tiling(camera, expected_tiles);
   }

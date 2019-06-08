@@ -1,7 +1,5 @@
-mod intersection;
-mod lighting;
+mod tracing;
 mod tiling;
 
-pub use intersection::Intersection;
-pub use lighting::lighting;
-pub use tiling::Tiling;
+pub use tracing::{TracingSystem, IntersectionSubsystem, LightingSubsystem};
+pub use tiling::TilingSystem;

@@ -1,15 +1,21 @@
+extern crate rayon;
 extern crate rusty_math as rm;
 extern crate specs;
 
-mod common;
-mod resources;
-
+mod canvas;
 mod components;
+mod ecs;
 mod entities;
+mod ray;
+mod resources;
 mod systems;
+mod traits;
 
-use common::Scene;
+pub use canvas::{Canvas, Batch, BATCH_SIZE};
+pub use ray::Ray;
+
+use ecs::ECS;
 
 fn main() {
-  Scene::demo().run();
+  ECS::demo().run();
 }

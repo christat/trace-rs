@@ -1,4 +1,4 @@
-use crate::common::Ray;
+use crate::ray::Ray;
 use rm::{Matrix4, Tuple4};
 
 pub struct Camera {
@@ -48,9 +48,9 @@ impl Camera {
 
 impl Default for Camera {
   fn default() -> Self {
-    let mut camera = Self::new(11, 11, std::f32::consts::PI / 2.0);
+    let mut camera = Self::new(100, 100, std::f32::consts::PI / 4.0);
     camera.transform = view_transform(
-      Tuple4::point(0.0, 0.0, -5.0),
+      Tuple4::point(0.0, 0.0, 5.0),
       Tuple4::point(0.0, 0.0, 0.0),
       Tuple4::vector(0.0, 1.0, 0.0),
     );

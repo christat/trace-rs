@@ -19,8 +19,10 @@ impl Phong {
             shininess
         }
     }
+}
 
-    pub fn default() -> Self {
+impl Default for Phong {
+    fn default() -> Self {
         Self {
             color: Color::new(1.0, 1.0, 1.0),
             ambient: 0.1,

@@ -1,15 +1,14 @@
 use specs::{Component, VecStorage};
 
-#[derive(Debug)]
+mod sphere;
+
+pub use sphere::Sphere;
+
+#[derive(Debug, PartialEq)]
 pub enum Shape {
-    Sphere(SphereShape)
+    Sphere(Sphere),
 }
 
 impl Component for Shape {
     type Storage = VecStorage<Self>;
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct SphereShape {
-    pub radius: f32
 }

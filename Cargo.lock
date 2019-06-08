@@ -337,6 +337,7 @@ dependencies = [
 name = "rusty-cage"
 version = "0.1.0"
 dependencies = [
+ "rayon 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusty-math 0.1.0",
  "specs 0.14.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",

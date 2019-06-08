@@ -1,33 +1,33 @@
-use crate::components::{Material, MaterialType, Position, Shape, SphereShape, Transform};
-use rm::{Matrix4, Tuple4};
 use specs::{Builder, Entity, World};
+
+use crate::components::{Material, Position, Shape, Sphere as SphereShape, Transform};
 
 pub struct Sphere;
 
 impl Sphere {
   pub fn new(
     world: &mut World,
-    position: Tuple4,
+    position: Position,
     shape: SphereShape,
-    transform: Matrix4,
-    material: MaterialType,
+    transform: Transform,
+    material: Material,
   ) -> Entity {
     world
       .create_entity()
-      .with(Position::new(position))
+      .with(position)
       .with(Shape::Sphere(shape))
-      .with(Transform::new(transform))
-      .with(Material::new(material))
+      .with(transform)
+      .with(material)
       .build()
   }
 
-  pub fn unit(world: &mut World) -> Entity {
+  /* pub fn unit(world: &mut World) -> Entity {
      world
       .create_entity()
-      .with(Position::new(Tuple4::point(0.0, 0.0, 0.0)))
-      .with(Shape::Sphere(SphereShape { radius: 1.0 }))
+      .with(Position::origin())
+      .with(Shape::Sphere(SphereShape::default()))
       .with(Transform::default())
       .with(Material::default())
       .build()
-  }
+  } */
 }

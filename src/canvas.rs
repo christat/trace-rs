@@ -1,19 +1,51 @@
 use std::fs;
-use crate::components::Color;
+
+use crate::components::{Color, Tile};
+use crate::components::{BLACK, DEFAULT_TILE_SIZE};
+
+pub const BATCH_SIZE: usize = DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE;
+
+pub struct Batch {
+  pub tile: Tile,
+  pub colors: [Color; BATCH_SIZE],
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Canvas {
   canvas: Vec<Color>,
   height: usize,
-  width: usize
+  width: usize,
 }
 
 impl Canvas {
   pub fn new(width: usize, height: usize) -> Self {
     Self {
-      canvas: vec![Color::new(0.0, 0.0, 0.0); width * height],
+      canvas: vec![BLACK; width * height],
       height: height,
-      width: width
+      width: width,
+    }
+  }
+
+  pub fn from_batches(width: usize, height: usize, batches: &[Batch]) -> Self {
+    let mut canvas = vec![BLACK; width * height];
+
+    for batch in batches.iter() {
+      let Batch { tile, colors } = batch;
+      for y in tile.y_start..tile.y_end {
+        for x in tile.x_start..tile.x_end {
+          let abs_y = y as usize;
+          let abs_x = x as usize;
+          let batch_y = (y - tile.y_start) as usize;
+          let batch_x = (x - tile.x_start) as usize;
+          canvas[abs_y * DEFAULT_TILE_SIZE + abs_x] = colors[batch_y * DEFAULT_TILE_SIZE + batch_x];
+        }
+      }
+    }
+
+    Self {
+      canvas,
+      height: height,
+      width: width,
     }
   }
 
@@ -23,7 +55,9 @@ impl Canvas {
 
   fn as_ppm(&self) -> String {
     let mut ppm = format!("P3\n{} {}\n255\n", self.width, self.height);
-    if self.canvas.len() == 0 { return ppm };
+    if self.canvas.len() == 0 {
+      return ppm;
+    };
 
     let mut line: String = self.canvas.first().unwrap().to_channels_vec().join(" ");
     let mut count = 1;
@@ -65,7 +99,7 @@ mod tests {
       let expected = Canvas {
         canvas: vec![Color::new(0.0, 0.0, 0.0); width * height],
         height: height,
-        width: width
+        width: width,
       };
       assert_eq!(expected, Canvas::new(width, height));
     }
@@ -87,7 +121,12 @@ mod tests {
       fn header() {
         assert_eq!(
           String::from("P3\n5 3\n255"),
-          Canvas::new(5, 3).as_ppm().lines().take(3).collect::<Vec<_>>().join("\n")
+          Canvas::new(5, 3)
+            .as_ppm()
+            .lines()
+            .take(3)
+            .collect::<Vec<_>>()
+            .join("\n")
         );
       }
 
@@ -103,9 +142,13 @@ mod tests {
         let body: String = [
           "255 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
           "0 0 0 0 0 0 0 128 0 0 0 0 0 0 0",
-          "0 0 0 0 0 0 0 0 0 0 0 0 0 0 255"
-        ].join("\n");
-        assert_eq!(body, c.as_ppm().lines().skip(3).collect::<Vec<_>>().join("\n"));
+          "0 0 0 0 0 0 0 0 0 0 0 0 0 0 255",
+        ]
+        .join("\n");
+        assert_eq!(
+          body,
+          c.as_ppm().lines().skip(3).collect::<Vec<_>>().join("\n")
+        );
       }
 
       #[test]
@@ -117,8 +160,17 @@ mod tests {
           "153 255 204 153 255 204 153 255 204 153 255 204 153",
           "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204",
           "153 255 204 153 255 204 153 255 204 153 255 204 153",
-        ].join("\n");
-        assert_eq!(body, canvas.as_ppm().lines().skip(3).collect::<Vec<_>>().join("\n"));
+        ]
+        .join("\n");
+        assert_eq!(
+          body,
+          canvas
+            .as_ppm()
+            .lines()
+            .skip(3)
+            .collect::<Vec<_>>()
+            .join("\n")
+        );
       }
 
       #[test]

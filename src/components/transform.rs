@@ -1,21 +1,17 @@
 use rm::Matrix4;
 use specs::{Component, VecStorage};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Transform(pub rm::Matrix4);
+
+impl Default for Transform {
+    fn default() -> Self {
+        Self(Matrix4::identity())
+    }
+}
 
 impl Component for Transform {
     type Storage = VecStorage<Self>;
-}
-
-impl Transform {
-    pub fn new(transform: Matrix4) -> Self {
-        Self(transform)
-    }
-
-    pub fn default() -> Self {
-        Self(Matrix4::identity())
-    }
 }
 
 #[cfg(test)]
@@ -31,7 +27,7 @@ mod tests {
             Tuple4::new(8.0, 9.0, 10.0, 11.0),
             Tuple4::new(12.0, 13.0, 14.0, 15.0)
         );
-        let tr = Transform::new(mat);
+        let tr = Transform(mat);
         assert_eq!(mat, tr.0);
     }
 

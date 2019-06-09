@@ -1,4 +1,4 @@
-/target
-rusty-math/target
+/target/
+yaac/target/
 **/*.rs.bk
 *.ppm

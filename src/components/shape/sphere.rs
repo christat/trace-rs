@@ -1,7 +1,7 @@
 use yaac::Tuple4;
 
 use crate::components::{Material, Position, Shape, Transform};
-use crate::utils::IntersectionRecord;
+use crate::systems::IntersectionRecord;
 use crate::Ray;
 
 pub fn intersect<'a>(
@@ -63,15 +63,15 @@ pub fn normal_at(point: &Tuple4, pos: &Position, tr: &Transform) -> Tuple4 {
 
 #[cfg(test)]
 mod tests {
-  use super::{intersect, normal_at};
   use crate::components::{Material, Position, Shape, Transform};
-  use crate::utils::IntersectionRecord;
   use crate::Ray;
+  use crate::systems::IntersectionRecord;
+  use super::{intersect, normal_at};
   use yaac::{test_utils, Matrix4, Tuple4};
 
   #[test]
   fn intersect_sphere() {
-    let position = &Position::origin();
+    let position = &Position::default();
     let radius = 1.0;
     let shape = &Shape::Sphere { radius };
     let transform = &Transform(Matrix4::identity());

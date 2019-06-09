@@ -1,6 +1,7 @@
+use specs::{Entities, Read, System, WriteStorage};
+
 use crate::components::{Tile, DEFAULT_TILE_SIZE};
 use crate::resources::Camera;
-use specs::{Entities, Read, System, WriteStorage};
 
 /// Splits a given scene's representable grid into tiles of aggregated pixels;
 /// This helps the render system achieve greater data locality per thread.
@@ -13,19 +14,19 @@ impl<'a> System<'a> for TilingSystem {
 
   fn run(&mut self, (entities, camera, mut tiles): Self::SystemData) {
     let tile_size = DEFAULT_TILE_SIZE as u16;
-    for y_start in (0..camera.v_size).step_by(DEFAULT_TILE_SIZE) {
-      for x_start in (0..camera.h_size).step_by(DEFAULT_TILE_SIZE) {
+    for y_start in (0..camera.height).step_by(DEFAULT_TILE_SIZE) {
+      for x_start in (0..camera.width).step_by(DEFAULT_TILE_SIZE) {
         let x_span = x_start + tile_size;
         let y_span = y_start + tile_size;
-        let x_end = if x_span <= camera.h_size {
+        let x_end = if x_span <= camera.width {
           x_span
         } else {
-          camera.h_size
+          camera.width
         };
-        let y_end = if y_span <= camera.v_size {
+        let y_end = if y_span <= camera.height {
           y_span
         } else {
-          camera.v_size
+          camera.height
         };
         tiles
           .insert(
@@ -85,8 +86,8 @@ mod tests {
   #[test]
   fn divisible_resolution() {
     let mut camera = Camera::default();
-    camera.h_size = 32;
-    camera.v_size = 32;
+    camera.width = 32;
+    camera.height = 32;
 
     let expected_tiles = vec![
       Tile {
@@ -121,8 +122,8 @@ mod tests {
   #[test]
   fn non_divisible_resolution() {
     let mut camera = Camera::default();
-    camera.h_size = 39;
-    camera.v_size = 19;
+    camera.width = 39;
+    camera.height = 19;
 
     let expected_tiles = vec![
       Tile {

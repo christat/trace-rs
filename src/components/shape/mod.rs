@@ -2,7 +2,7 @@ use specs::{Component, VecStorage};
 use yaac::Tuple4;
 
 use crate::components::{Material, Position, Transform};
-use crate::utils::IntersectionRecord;
+use crate::systems::IntersectionRecord;
 use crate::Ray;
 
 mod sphere;
@@ -34,7 +34,9 @@ impl<'a> Shape {
         material: &'a Material,
     ) -> Option<Vec<IntersectionRecord<'a>>> {
         match self {
-            Shape::Sphere { radius } => intersect_sphere(*radius, ray, position, shape, transform, material)
+            Shape::Sphere { radius } => {
+                intersect_sphere(*radius, ray, position, shape, transform, material)
+            }
         }
     }
 

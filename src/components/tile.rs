@@ -1,7 +1,7 @@
 use specs::{Component, VecStorage};
 
 /// Fixed default size (in pixels) for each render tile.
-/// 
+///
 /// Based off of pbrt's own tiling system:
 /// http://www.pbr-book.org/3ed-2018/Introduction/pbrt_System_Overview.html#TheMainRenderingLoop
 pub const DEFAULT_TILE_SIZE: usize = 16;
@@ -13,9 +13,9 @@ pub struct Tile {
   pub x_start: u16,
   pub x_end: u16,
   pub y_start: u16,
-  pub y_end: u16
+  pub y_end: u16,
 }
 
 impl Component for Tile {
-    type Storage = VecStorage<Self>;
+  type Storage = VecStorage<Self>;
 }

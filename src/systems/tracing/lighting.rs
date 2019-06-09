@@ -1,18 +1,30 @@
 use yaac::Tuple4;
 
-use crate::components::{BLACK, Color, Material, MaterialType, Phong};
+use crate::components::{Color, Material, Phong, BLACK};
 use crate::resources::PointLight;
 
 pub struct LightingSubsystem;
 
 impl LightingSubsystem {
-  pub fn run<'a>(material: &Material, light: &PointLight, point: &Tuple4, eye_v: &Tuple4, normal_v: &Tuple4) -> Color {
-    match material.0 {
-      MaterialType::Phong(m) => Self::phong(&m, light, point, eye_v, normal_v)
+  pub fn run<'a>(
+    material: &Material,
+    light: &PointLight,
+    point: &Tuple4,
+    eye_v: &Tuple4,
+    normal_v: &Tuple4,
+  ) -> Color {
+    match material {
+      Material::Phong(m) => Self::phong(&m, light, point, eye_v, normal_v),
     }
   }
 
-  pub fn phong(phong: &Phong, light: &PointLight, point: &Tuple4, eye_v: &Tuple4, normal_v: &Tuple4) -> Color {
+  pub fn phong(
+    phong: &Phong,
+    light: &PointLight,
+    point: &Tuple4,
+    eye_v: &Tuple4,
+    normal_v: &Tuple4,
+  ) -> Color {
     let color = phong.color * light.intensity;
     let ambient = color * phong.ambient;
     let mut diffuse = BLACK;
@@ -40,9 +52,9 @@ mod tests {
   use yaac::test_utils;
 
   fn cmp_color(lhs: Color, rhs: Color) -> bool {
-    test_utils::cmp_f32(lhs.r(), rhs.r()) &&
-    test_utils::cmp_f32(lhs.g(), rhs.g()) &&
-    test_utils::cmp_f32(lhs.b(), rhs.b())
+    test_utils::cmp_f32(lhs.r(), rhs.r())
+      && test_utils::cmp_f32(lhs.g(), rhs.g())
+      && test_utils::cmp_f32(lhs.b(), rhs.b())
   }
 
   #[test]
@@ -52,7 +64,10 @@ mod tests {
     let eye_v = Tuple4::vector(0.0, 0.0, -1.0);
     let normal_v = Tuple4::vector(0.0, 0.0, -1.0);
     let light = PointLight::new(Tuple4::point(0.0, 0.0, -10.0), Color::new(1.0, 1.0, 1.0));
-    assert!(cmp_color(Color::new(1.9, 1.9, 1.9), LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)));
+    assert!(cmp_color(
+      Color::new(1.9, 1.9, 1.9),
+      LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)
+    ));
   }
 
   #[test]
@@ -63,7 +78,10 @@ mod tests {
     let eye_v = Tuple4::vector(0.0, coord, -coord);
     let normal_v = Tuple4::vector(0.0, 0.0, -1.0);
     let light = PointLight::new(Tuple4::point(0.0, 0.0, -10.0), Color::new(1.0, 1.0, 1.0));
-    assert!(cmp_color(Color::new(1.0, 1.0, 1.0), LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)));
+    assert!(cmp_color(
+      Color::new(1.0, 1.0, 1.0),
+      LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)
+    ));
   }
 
   #[test]
@@ -73,7 +91,10 @@ mod tests {
     let eye_v = Tuple4::vector(0.0, 0.0, -1.0);
     let normal_v = Tuple4::vector(0.0, 0.0, -1.0);
     let light = PointLight::new(Tuple4::point(0.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0));
-    assert!(cmp_color(Color::new(0.7363, 0.7363, 0.7363), LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)));
+    assert!(cmp_color(
+      Color::new(0.7363, 0.7363, 0.7363),
+      LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)
+    ));
   }
 
   #[test]
@@ -84,7 +105,10 @@ mod tests {
     let eye_v = Tuple4::vector(0.0, -coord, -coord);
     let normal_v = Tuple4::vector(0.0, 0.0, -1.0);
     let light = PointLight::new(Tuple4::point(0.0, 10.0, -10.0), Color::new(1.0, 1.0, 1.0));
-    assert!(cmp_color(Color::new(1.6363962, 1.6363962, 1.6363962), LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)));
+    assert!(cmp_color(
+      Color::new(1.6363962, 1.6363962, 1.6363962),
+      LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)
+    ));
   }
 
   #[test]
@@ -94,6 +118,9 @@ mod tests {
     let eye_v = Tuple4::vector(0.0, 0.0, -1.0);
     let normal_v = Tuple4::vector(0.0, 0.0, -1.0);
     let light = PointLight::new(Tuple4::point(0.0, 0.0, 10.0), Color::new(1.0, 1.0, 1.0));
-    assert!(cmp_color(Color::new(0.1, 0.1, 0.1), LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)));
+    assert!(cmp_color(
+      Color::new(0.1, 0.1, 0.1),
+      LightingSubsystem::phong(&m, &light, &pos, &eye_v, &normal_v)
+    ));
   }
 }

@@ -1,5 +1,5 @@
-mod tracing;
 mod tiling;
+mod tracing;
 
-pub use tracing::{TracingSystem, IntersectionSubsystem, LightingSubsystem};
 pub use tiling::TilingSystem;
+pub use tracing::{IntersectionSubsystem, LightingSubsystem, TracingSystem, IntersectionRecord, HitMetadata};

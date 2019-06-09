@@ -1,9 +1,10 @@
-use crate::ray::Ray;
 use yaac::{Matrix4, Tuple4};
 
+use crate::ray::Ray;
+
 pub struct Camera {
-  pub h_size: u16,
-  pub v_size: u16,
+  pub width: u16,
+  pub height: u16,
   pub fov: f32,
   pub transform: Matrix4,
   pub half_width: f32,
@@ -12,17 +13,17 @@ pub struct Camera {
 }
 
 impl Camera {
-  pub fn new(h_size: u16, v_size: u16, fov: f32) -> Self {
+  pub fn new(width: u16, height: u16, fov: f32) -> Self {
     let half_view = f32::tan(fov / 2.0);
-    let aspect_ratio = h_size as f32 / v_size as f32;
+    let aspect_ratio = width as f32 / height as f32;
     let (half_width, half_height) = match aspect_ratio {
       aspect if aspect >= 1.0 => (half_view, half_view / aspect),
       aspect => (half_view * aspect, half_view),
     };
-    let pixel_size = (half_width * 2.0) / h_size as f32;
+    let pixel_size = (half_width * 2.0) / width as f32;
     Self {
-      h_size,
-      v_size,
+      width,
+      height,
       fov,
       transform: Matrix4::identity(),
       half_width,
@@ -48,9 +49,9 @@ impl Camera {
 
 impl Default for Camera {
   fn default() -> Self {
-    let mut camera = Self::new(100, 100, std::f32::consts::PI / 4.0);
+    let mut camera = Self::new(200, 200, std::f32::consts::PI / 4.0);
     camera.transform = view_transform(
-      Tuple4::point(0.0, 0.0, 5.0),
+      Tuple4::point(0.0, 0.0, -5.0),
       Tuple4::point(0.0, 0.0, 0.0),
       Tuple4::vector(0.0, 1.0, 0.0),
     );
@@ -63,30 +64,31 @@ pub fn view_transform(from: Tuple4, to: Tuple4, up: Tuple4) -> Matrix4 {
   let up_normalized = up.normalized();
   let left = Tuple4::cross(forward, up_normalized).unwrap();
   let true_up = Tuple4::cross(left, forward).unwrap();
-  Matrix4::new(
+  let orientation = Matrix4::new(
     Tuple4::new(left.x(), true_up.x(), -forward.x(), 0.0),
     Tuple4::new(left.y(), true_up.y(), -forward.y(), 0.0),
     Tuple4::new(left.z(), true_up.z(), -forward.z(), 0.0),
     Tuple4::new(0.0, 0.0, 0.0, 1.0),
-  )
+  );
+  orientation * Matrix4::translation(-from.x(), -from.y(), -from.z())
 }
 
 #[cfg(test)]
 mod tests {
   mod camera {
     use super::super::Camera;
-    use yaac::{Matrix4, Tuple4};
     use yaac::test_utils::cmp_tuple4;
+    use yaac::{Matrix4, Tuple4};
 
     const HALF_PI: f32 = std::f32::consts::PI / 2.0;
 
     #[test]
     fn constructor() {
       let c = Camera::new(160, 120, HALF_PI);
-      assert_eq!(160, c.h_size);
-      assert_eq!(120, c.v_size);
+      assert_eq!(160, c.width);
+      assert_eq!(120, c.height);
       assert_eq!(HALF_PI, c.fov);
-      assert_eq!(Matrix4::identity(), c.transform)
+      assert_eq!(Matrix4::identity(), c.transform);
     }
 
     #[test]
@@ -95,7 +97,7 @@ mod tests {
       assert_eq!(0.01, c.pixel_size);
 
       let c = Camera::new(125, 200, HALF_PI);
-      assert_eq!(0.01, c.pixel_size)
+      assert_eq!(0.01, c.pixel_size);
     }
 
     #[test]
@@ -126,8 +128,8 @@ mod tests {
 
   mod functions {
     use super::super::view_transform;
-    use yaac::{Matrix4, Tuple4};
     use yaac::test_utils::cmp_matrix4;
+    use yaac::{Matrix4, Tuple4};
 
     #[test]
     fn view_transform_default() {

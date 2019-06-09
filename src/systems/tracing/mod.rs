@@ -11,7 +11,7 @@ use crate::resources::{Camera, Lights};
 use crate::BATCH_SIZE;
 use crate::components::{BLACK, DEFAULT_TILE_SIZE};
 
-pub use intersection::IntersectionSubsystem;
+pub use intersection::{HitMetadata, IntersectionRecord, IntersectionSubsystem};
 pub use lighting::LightingSubsystem;
 
 /// Raytracing root system.
@@ -55,6 +55,6 @@ impl<'a> System<'a> for TracingSystem {
     });
 
     let batches: Vec<Batch> = par_iter.collect();
-    Canvas::from_batches(camera.h_size as usize, camera.v_size as usize, &batches).export_ppm(&String::from("ecs.ppm"));
+    Canvas::from_batches(camera.width as usize, camera.height as usize, &batches).export_ppm(&String::from("ecs.ppm"));
   }
 }

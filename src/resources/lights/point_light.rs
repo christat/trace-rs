@@ -1,5 +1,6 @@
-use crate::components::Color;
 use yaac::Tuple4;
+
+use crate::components::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PointLight {

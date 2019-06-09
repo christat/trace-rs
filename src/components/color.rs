@@ -23,11 +23,11 @@ impl Color {
     self.0[2]
   }
 
-  pub fn to_channels_vec(&self) -> Vec<String> {
+  pub fn to_channels_array(&self) -> [String; 3] {
     let r = f32::min(255.0, f32::max(0.0, (self.r() * 255.0).round())) as u8;
     let g = f32::min(255.0, f32::max(0.0, (self.g() * 255.0).round())) as u8;
     let b = f32::min(255.0, f32::max(0.0, (self.b() * 255.0).round())) as u8;
-    vec![r.to_string(), g.to_string(), b.to_string()]
+    [r.to_string(), g.to_string(), b.to_string()]
   }
 }
 
@@ -132,13 +132,13 @@ mod tests {
     }
 
     #[test]
-    fn to_channels_vec() {
+    fn to_channels_array() {
       let c1 = Color::new(1.5, 0.0, 0.0);
       let c2 = Color::new(0.0, 0.5, 0.0);
       let c3 = Color::new(-0.5, 0.0, 1.0);
-      assert_eq!("255 0 0".split_whitespace().collect::<Vec<_>>(), c1.to_channels_vec());
-      assert_eq!("0 128 0".split_whitespace().collect::<Vec<_>>(), c2.to_channels_vec());
-      assert_eq!("0 0 255".split_whitespace().collect::<Vec<_>>(), c3.to_channels_vec());
+      assert_eq!("255 0 0".split_whitespace().collect::<Vec<_>>(), c1.to_channels_array());
+      assert_eq!("0 128 0".split_whitespace().collect::<Vec<_>>(), c2.to_channels_array());
+      assert_eq!("0 0 255".split_whitespace().collect::<Vec<_>>(), c3.to_channels_array());
     }
   }
 

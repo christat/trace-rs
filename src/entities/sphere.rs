@@ -21,13 +21,13 @@ impl Sphere {
       .build()
   }
 
-  /* pub fn unit(world: &mut World) -> Entity {
+  pub fn unit(world: &mut World) -> Entity {
      world
       .create_entity()
-      .with(Position::origin())
-      .with(Shape::Sphere(SphereShape::default()))
+      .with(Position::default())
+      .with(Shape::Sphere { radius: 1.0 })
       .with(Transform::default())
       .with(Material::default())
       .build()
-  } */
+  }
 }

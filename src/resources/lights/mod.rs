@@ -1,7 +1,8 @@
-mod point_light;
+use yaac::Tuple4;
 
 use crate::components::Color;
-use yaac::Tuple4;
+
+mod point_light;
 
 pub use point_light::PointLight;
 

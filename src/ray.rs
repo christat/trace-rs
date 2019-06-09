@@ -3,14 +3,14 @@ use yaac::{Matrix4, Tuple4};
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Ray {
   pub origin: Tuple4,
-  pub direction: Tuple4
+  pub direction: Tuple4,
 }
 
 impl Ray {
   pub fn new(origin: Tuple4, direction: Tuple4) -> Self {
     Self {
       origin: origin,
-      direction: direction
+      direction: direction,
     }
   }
 
@@ -21,7 +21,7 @@ impl Ray {
   pub fn transform(&self, t: Matrix4) -> Self {
     Self {
       origin: t * self.origin,
-      direction: t * self.direction
+      direction: t * self.direction,
     }
   }
 }

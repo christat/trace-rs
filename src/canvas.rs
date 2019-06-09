@@ -33,11 +33,11 @@ impl Canvas {
       let Batch { tile, colors } = batch;
       for y in tile.y_start..tile.y_end {
         for x in tile.x_start..tile.x_end {
-          let abs_y = y as usize;
-          let abs_x = x as usize;
-          let batch_y = (y - tile.y_start) as usize;
-          let batch_x = (x - tile.x_start) as usize;
-          canvas[abs_y * DEFAULT_TILE_SIZE + abs_x] = colors[batch_y * DEFAULT_TILE_SIZE + batch_x];
+          let canvas_y = y as usize;
+          let canvas_x = x as usize;
+          let data_y = (y - tile.y_start) as usize;
+          let data_x = (x - tile.x_start) as usize;
+          canvas[canvas_y * width + canvas_x] = colors[data_y * DEFAULT_TILE_SIZE + data_x];
         }
       }
     }
@@ -59,17 +59,17 @@ impl Canvas {
       return ppm;
     };
 
-    let mut line: String = self.canvas.first().unwrap().to_channels_vec().join(" ");
+    let mut line: String = self.canvas.first().unwrap().to_channels_array().join(" ");
     let mut count = 1;
     for color in self.canvas.iter().skip(1) {
-      for channel in color.to_channels_vec() {
+      for channel in color.to_channels_array().iter() {
         if line.len() + channel.len() >= 70 || count >= self.width {
           if count >= self.width {
             count = 0;
           }
           line.push('\n');
           ppm.push_str(&line);
-          line = channel;
+          line = channel.to_string();
         } else {
           line.push(' ');
           line.push_str(&channel);
@@ -90,7 +90,8 @@ impl Canvas {
 #[cfg(test)]
 mod tests {
   mod methods {
-    use super::super::{Canvas, Color};
+    use super::super::Canvas;
+    use crate::components::Color;
 
     #[test]
     fn constructor() {

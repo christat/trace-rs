@@ -52,19 +52,19 @@ impl ECS {
   }
 
   fn register_demo_entities(&mut self) {
-    use components::{Color, Material, MaterialType, Position, Phong, Sphere as SphereShape, Transform};
+    use components::{Color, Material, MaterialType, Position, Phong, Transform};
 
     Sphere::new(
       &mut self.0,
       Position::origin(),
-      SphereShape::default(),
+      1.0,
       Transform::default(),
       Material(MaterialType::Phong(Phong::new(Color::new(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200.0))),
     );
     Sphere::new(
       &mut self.0,
       Position::origin(),
-      SphereShape::default(),
+      1.0,
       Transform(Matrix4::scaling(0.5, 0.5, 0.5)),
       Material::default()
     );

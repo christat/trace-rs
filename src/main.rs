@@ -10,7 +10,7 @@ mod systems;
 mod canvas;
 mod ecs;
 mod ray;
-mod traits;
+mod utils;
 
 pub use canvas::{Canvas, Batch, BATCH_SIZE};
 pub use ray::Ray;

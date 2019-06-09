@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use crate::components::{Color, Material, Position, Shape, Transform};
 use crate::resources::Lights;
 use crate::systems::LightingSubsystem;
-use crate::traits::{Intersection, IntersectionRecord, Normal};
+use crate::utils::IntersectionRecord;
 use crate::Ray;
 
 pub struct IntersectionSubsystem;
@@ -22,9 +22,7 @@ impl IntersectionSubsystem {
 
     // TODO - build BVH tree and intersect here
     for (pos, shape, trans, mat) in (positions, shapes, transforms, materials).join() {
-      let intersection = match shape {
-        Shape::Sphere(s) => s.intersect(ray, pos, shape, trans, mat),
-      };
+      let intersection = shape.intersect(ray, pos, shape, trans, mat);
       if intersection.is_some() {
         intersection_records.append(&mut intersection.unwrap())
       }
@@ -38,9 +36,7 @@ impl IntersectionSubsystem {
     let hit = hit_record.unwrap();
     let point = ray.point_at(hit.t);
     let eye = -ray.direction;
-    let normal = match hit.shape {
-      Shape::Sphere(s) => s.normal_at(&point, hit.position, hit.transform),
-    };
+    let normal = hit.shape.normal_at(&point, hit.position, hit.transform);
     Some(LightingSubsystem::run(
       hit.material,
       &lights.0,
@@ -63,14 +59,15 @@ impl IntersectionSubsystem {
 
 #[cfg(test)]
 mod tests {
-  use crate::components::{Material, Position, Shape, Sphere, Transform};
-  use crate::traits::IntersectionRecord;
   use super::IntersectionSubsystem;
+  use crate::components::{Material, Position, Shape, Transform};
+  use crate::utils::IntersectionRecord;
 
   #[test]
   fn nearest_hit() {
     let position = &Position::origin();
-    let shape = &Shape::Sphere(Sphere::default());
+    let radius = 1.0;
+    let shape = &Shape::Sphere { radius };
     let transform = &Transform::default();
     let material = &Material::default();
     // smallest

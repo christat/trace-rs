@@ -1,4 +1,4 @@
-use rm::{Matrix4, Tuple4};
+use yaac::{Matrix4, Tuple4};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Ray {
@@ -29,7 +29,8 @@ impl Ray {
 #[cfg(test)]
 mod tests {
   mod methods {
-    use super::super::{Ray, Matrix4, Tuple4};
+    use super::super::Ray;
+    use yaac::{Matrix4, Tuple4};
 
     #[test]
     fn constructor() {

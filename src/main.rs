@@ -1,14 +1,15 @@
 extern crate rayon;
-extern crate rusty_math as rm;
 extern crate specs;
+extern crate yaac;
 
-mod canvas;
 mod components;
-mod ecs;
 mod entities;
-mod ray;
 mod resources;
 mod systems;
+
+mod canvas;
+mod ecs;
+mod ray;
 mod traits;
 
 pub use canvas::{Canvas, Batch, BATCH_SIZE};

@@ -1,5 +1,5 @@
 use crate::components::Color;
-use rm::Tuple4;
+use yaac::Tuple4;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PointLight {
@@ -18,7 +18,8 @@ impl PointLight {
 
 #[cfg(test)]
 mod tests {
-  use super::{Color, PointLight, Tuple4};
+  use super::{Color, PointLight};
+  use yaac::Tuple4;
 
   #[test]
   fn constructor() {

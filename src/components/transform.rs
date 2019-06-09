@@ -1,8 +1,8 @@
-use rm::Matrix4;
+use yaac::Matrix4;
 use specs::{Component, VecStorage};
 
 #[derive(Debug, PartialEq)]
-pub struct Transform(pub rm::Matrix4);
+pub struct Transform(pub Matrix4);
 
 impl Default for Transform {
     fn default() -> Self {
@@ -16,8 +16,8 @@ impl Component for Transform {
 
 #[cfg(test)]
 mod tests {
-    use super::{Matrix4, Transform};
-    use rm::Tuple4;
+    use super::Transform;
+    use yaac::{Matrix4, Tuple4};
 
     #[test]
     fn new() {

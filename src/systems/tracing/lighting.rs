@@ -1,4 +1,4 @@
-use rm::Tuple4;
+use yaac::Tuple4;
 
 use crate::components::{BLACK, Color, Material, MaterialType, Phong};
 use crate::resources::PointLight;
@@ -37,7 +37,7 @@ impl LightingSubsystem {
 #[cfg(test)]
 mod tests {
   use super::{Color, LightingSubsystem, Phong, PointLight, Tuple4};
-  use rusty_math::test_utils;
+  use yaac::test_utils;
 
   fn cmp_color(lhs: Color, rhs: Color) -> bool {
     test_utils::cmp_f32(lhs.r(), rhs.r()) &&

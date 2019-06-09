@@ -1,11 +1,10 @@
 [package]
-name = "rusty-cage"
+name = "trace-rs"
 version = "0.1.0"
 authors = ["Chris Statkiewicz <christopherstat@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
 rayon = "1.0.3"
-rusty-math = { path = "rusty-math", version = "0.1.0" }
 specs = "0.14.3"
-toml = "0.5"
+yaac= { path = "yaac", version = "0.1.0" }

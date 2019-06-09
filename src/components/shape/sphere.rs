@@ -1,4 +1,4 @@
-use rm::Tuple4;
+use yaac::Tuple4;
 
 use crate::components::{Material, Position, Shape, Transform};
 use crate::Ray;
@@ -81,7 +81,7 @@ mod tests {
     use crate::components::{Position, Shape, Sphere, Material, Transform};
     use crate::traits::{Intersection, IntersectionRecord, Normal};
     use crate::Ray;
-    use rm::{Matrix4, Tuple4, test_utils};
+    use yaac::{Matrix4, Tuple4, test_utils};
 
     #[test]
     fn intersect_sphere() {

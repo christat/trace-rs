@@ -1,5 +1,5 @@
 use crate::ray::Ray;
-use rm::{Matrix4, Tuple4};
+use yaac::{Matrix4, Tuple4};
 
 pub struct Camera {
   pub h_size: u16,
@@ -75,8 +75,8 @@ pub fn view_transform(from: Tuple4, to: Tuple4, up: Tuple4) -> Matrix4 {
 mod tests {
   mod camera {
     use super::super::Camera;
-    use rm::test_utils::cmp_tuple4;
-    use rm::{Matrix4, Tuple4};
+    use yaac::{Matrix4, Tuple4};
+    use yaac::test_utils::cmp_tuple4;
 
     const HALF_PI: f32 = std::f32::consts::PI / 2.0;
 
@@ -126,8 +126,8 @@ mod tests {
 
   mod functions {
     use super::super::view_transform;
-    use rm::test_utils::cmp_matrix4;
-    use rm::{Matrix4, Tuple4};
+    use yaac::{Matrix4, Tuple4};
+    use yaac::test_utils::cmp_matrix4;
 
     #[test]
     fn view_transform_default() {
